@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../data/dummy_data.dart';
+import '../models/message_model.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   final String senderName;
@@ -20,44 +22,28 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final TextEditingController _msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  // Data Dummy Obrolan
-  final List<Map<String, dynamic>> _messages = [
-    {
-      'text': 'Halo Mas Akbar, pesanan motor Vario 125 untuk tanggal 20 Mei sudah kami terima dan konfirmasi ya.',
-      'isMe': false,
-      'time': '10:00',
-    },
-    {
-      'text': 'Baik Pak, terima kasih. Untuk pengambilan motornya nanti bagaimana prosesnya?',
-      'isMe': true,
-      'time': '10:05',
-    },
-    {
-      'text': 'Silakan datang langsung ke lokasi cabang Mataram City Center (MCC). Nanti tinggal tunjukkan E-Tiket atau QR Code yang ada di aplikasi ke petugas kami di lapangan.',
-      'isMe': false,
-      'time': '10:07',
-    },
-    {
-      'text': 'Oke siap Pak, besok pagi jam 10 saya meluncur ke lokasi.',
-      'isMe': true,
-      'time': '10:10',
-    },
-    {
-      'text': 'Baik ditunggu kedatangannya Mas Akbar. Hati-hati di jalan! 🙏',
-      'isMe': false,
-      'time': '10:42',
-    },
-  ];
+  // Data Obrolan
+  List<ChatDetail> _messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi list messages dari DummyData
+    _messages = List.from(DummyData.chatDetails[widget.senderName] ?? []);
+  }
 
   void _sendMessage() {
     if (_msgController.text.trim().isEmpty) return;
 
     setState(() {
-      _messages.add({
-        'text': _msgController.text.trim(),
-        'isMe': true,
-        'time': 'Sekarang', // Waktu statis untuk contoh
-      });
+      _messages.add(
+        ChatDetail(
+          id: DateTime.now().toString(),
+          text: _msgController.text.trim(),
+          isMe: true,
+          time: 'Sekarang', // Waktu statis untuk contoh
+        )
+      );
       _msgController.clear();
     });
 
@@ -174,9 +160,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               itemBuilder: (context, index) {
                 final message = _messages[index];
                 return _buildMessageBubble(
-                  text: message['text'],
-                  isMe: message['isMe'],
-                  time: message['time'],
+                  text: message.text,
+                  isMe: message.isMe,
+                  time: message.time,
                   primaryPurple: primaryPurple,
                   darkText: darkText,
                 );

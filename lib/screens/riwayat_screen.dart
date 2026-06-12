@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../data/dummy_data.dart';
+import '../models/booking_model.dart';
 import 'main_screen.dart'; // Untuk navigasi kembali ke Beranda
 import 'tiket_screen.dart'; // Buka komentar ini jika tiket_screen sudah siap
 import 'profil_screen.dart'; // Buka komentar ini jika file profil_screen.dart sudah siap
@@ -96,69 +98,63 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
 
           // --- LIST KONTEN BOOKING ---
           Expanded(
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              children: [
-                // Tampilkan bagian "Aktif" jika tab Semua atau Aktif dipilih
-                if (_selectedTab == 'Semua' || _selectedTab == 'Aktif') ...[
-                  Text(
-                    'Aktif',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF22C55E)), // Hijau
-                  ),
-                  const SizedBox(height: 12),
-                  _buildBookingCard(
-                    namaMotor: 'Honda Vario 125',
-                    tanggal: '20 - 22 Mei 2024',
-                    harga: 'Rp 170.000',
-                    imageUrl: 'https://images.unsplash.com/photo-1625234199148-356b7c53d5fa?q=80&w=400',
-                    primaryPurple: primaryPurple,
-                    darkText: darkText,
-                  ),
-                  const SizedBox(height: 24),
-                ],
+            child: Builder(
+              builder: (context) {
+                List<Booking> filteredBookings = DummyData.bookings;
+                if (_selectedTab != 'Semua') {
+                  filteredBookings = filteredBookings.where((b) => b.status == _selectedTab).toList();
+                }
 
-                // Tampilkan bagian "Selesai" jika tab Semua atau Selesai dipilih
-                if (_selectedTab == 'Semua' || _selectedTab == 'Selesai' || _selectedTab == 'Aktif') ...[
-                  // Header Selesai (Bentuk Pill Abu-abu sesuai gambar)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Text(
-                        'Selesai',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildBookingCard(
-                    namaMotor: 'Yamaha NMAX 155',
-                    tanggal: '10 - 12 Mei 2024',
-                    harga: 'Rp 220.000',
-                    imageUrl: 'https://images.unsplash.com/photo-1625234199148-356b7c53d5fa?q=80&w=400',
-                    primaryPurple: primaryPurple,
-                    darkText: darkText,
-                  ),
-                  const SizedBox(height: 20),
-                ],
-                
-                // Pesan kosong jika tab dibatalkan dipilih
-                if (_selectedTab == 'Dibatalkan')
-                  Center(
+                if (filteredBookings.isEmpty) {
+                  return Center(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 50),
                       child: Text(
-                        'Tidak ada pesanan yang dibatalkan.',
+                        'Tidak ada pesanan.',
                         style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w500),
                       ),
                     ),
-                  ),
-              ],
+                  );
+                }
+
+                return ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                  itemCount: filteredBookings.length,
+                  itemBuilder: (context, index) {
+                    final booking = filteredBookings[index];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (index == 0 || filteredBookings[index - 1].status != booking.status) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            margin: EdgeInsets.only(bottom: 12, top: index == 0 ? 0.0 : 20.0),
+                            decoration: BoxDecoration(
+                              color: booking.status == 'Aktif' ? primaryPurple.withOpacity(0.1) : Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Text(
+                              booking.status,
+                              style: TextStyle(
+                                fontSize: 13, 
+                                fontWeight: FontWeight.bold, 
+                                color: booking.status == 'Aktif' ? primaryPurple : Colors.grey.shade700
+                              ),
+                            ),
+                          ),
+                        ],
+                        _buildBookingCard(
+                          booking: booking,
+                          primaryPurple: primaryPurple,
+                          darkText: darkText,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    );
+                  },
+                );
+              }
             ),
           ),
         ],
@@ -193,10 +189,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
 
   // --- WIDGET HELPER: KARTU BOOKING ---
   Widget _buildBookingCard({
-    required String namaMotor,
-    required String tanggal,
-    required String harga,
-    required String imageUrl,
+    required Booking booking,
     required Color primaryPurple,
     required Color darkText,
   }) {
@@ -225,7 +218,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             ),
             padding: const EdgeInsets.all(8),
             child: Image.network(
-              imageUrl,
+              booking.motor.image,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) => const Icon(Icons.motorcycle, color: Colors.grey),
             ),
@@ -238,19 +231,19 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  namaMotor,
+                  booking.motor.name,
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: darkText),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  tanggal,
+                  '${booking.startDate} - ${booking.endDate}',
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  harga,
+                  booking.price,
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: darkText),
                 ),
                 const SizedBox(height: 12),
@@ -269,11 +262,7 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TiketScreen(
-                            namaMotor: namaMotor,
-                            tanggal: tanggal,
-                            imageUrl: imageUrl,
-                          ),
+                          builder: (context) => TiketScreen(booking: booking),
                         ),
                       );
                     },

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../data/dummy_data.dart';
+import '../models/motor_model.dart';
 import 'detail_screen.dart'; // Untuk navigasi ke detail saat motor diklik
 
 class KatalogScreen extends StatefulWidget {
@@ -19,59 +21,7 @@ class _KatalogScreenState extends State<KatalogScreen> {
   late String _selectedCategory;
   final TextEditingController _searchController = TextEditingController();
   
-  // Master Data Motor (Lengkap dengan Kategori)
-  final List<Map<String, dynamic>> _masterMotorList = [
-    {
-      'name': 'Honda Vario 125',
-      'price': 'Rp 85.000',
-      'rating': '4.8',
-      'category': 'Matic',
-      'image': 'https://images.unsplash.com/photo-1625234199148-356b7c53d5fa?q=80&w=400',
-      'isFavorite': false,
-    },
-    {
-      'name': 'Yamaha NMAX 155',
-      'price': 'Rp 110.000',
-      'rating': '4.9',
-      'category': 'Matic',
-      'image': 'https://images.unsplash.com/photo-1625234199148-356b7c53d5fa?q=80&w=400',
-      'isFavorite': false,
-    },
-    {
-      'name': 'Honda Beat',
-      'price': 'Rp 70.000',
-      'rating': '4.7',
-      'category': 'Matic',
-      'image': 'https://images.unsplash.com/photo-1625234199148-356b7c53d5fa?q=80&w=400',
-      'isFavorite': true,
-    },
-    {
-      'name': 'Yamaha Aerox 155',
-      'price': 'Rp 100.000',
-      'rating': '4.8',
-      'category': 'Matic',
-      'image': 'https://images.unsplash.com/photo-1625234199148-356b7c53d5fa?q=80&w=400',
-      'isFavorite': false,
-    },
-    {
-      'name': 'Honda CBR 150R',
-      'price': 'Rp 150.000',
-      'rating': '4.9',
-      'category': 'Sport',
-      'image': 'https://images.unsplash.com/photo-1625234199148-356b7c53d5fa?q=80&w=400',
-      'isFavorite': false,
-    },
-    {
-      'name': 'Yamaha Fazzio',
-      'price': 'Rp 95.000',
-      'rating': '4.6',
-      'category': 'Retro',
-      'image': 'https://images.unsplash.com/photo-1625234199148-356b7c53d5fa?q=80&w=400',
-      'isFavorite': false,
-    },
-  ];
-
-  List<Map<String, dynamic>> _filteredList = [];
+  List<Motor> _filteredList = [];
   final List<String> _categories = ['Semua', 'Matic', 'Sport', 'Retro', 'Listrik'];
 
   @override
@@ -89,24 +39,24 @@ class _KatalogScreenState extends State<KatalogScreen> {
 
   // Logika Filter & Sorting
   void _applyFilterAndSort() {
-    List<Map<String, dynamic>> result = List.from(_masterMotorList);
+    List<Motor> result = List.from(DummyData.motors);
 
     // 1. Filter Kategori
     if (_selectedCategory != 'Semua') {
-      result = result.where((motor) => motor['category'] == _selectedCategory).toList();
+      result = result.where((motor) => motor.category == _selectedCategory).toList();
     }
 
     // 2. Filter Pencarian Teks
     String query = _searchController.text.toLowerCase();
     if (query.isNotEmpty) {
-      result = result.where((motor) => motor['name'].toString().toLowerCase().contains(query)).toList();
+      result = result.where((motor) => motor.name.toLowerCase().contains(query)).toList();
     }
 
     // 3. Sorting berdasarkan Bintang (Jika diminta via widget.sortByRating)
     if (widget.sortByRating) {
       result.sort((a, b) {
-        double ratingA = double.tryParse(a['rating']) ?? 0.0;
-        double ratingB = double.tryParse(b['rating']) ?? 0.0;
+        double ratingA = double.tryParse(a.rating) ?? 0.0;
+        double ratingB = double.tryParse(b.rating) ?? 0.0;
         return ratingB.compareTo(ratingA); // Descending (Tertinggi di atas)
       });
     }
@@ -247,7 +197,7 @@ class _KatalogScreenState extends State<KatalogScreen> {
   }
 
   // Widget Helper: Kartu Motor List Vertical
-  Widget _buildMotorCard(Map<String, dynamic> motor, Color primaryPurple, Color darkText) {
+  Widget _buildMotorCard(Motor motor, Color primaryPurple, Color darkText) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -281,9 +231,9 @@ class _KatalogScreenState extends State<KatalogScreen> {
               ),
               padding: const EdgeInsets.all(8),
               child: Hero(
-                tag: motor['name'],
+                tag: motor.name,
                 child: Image.network(
-                  motor['image'],
+                  motor.image,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => const Icon(Icons.motorcycle, color: Colors.grey),
                 ),
@@ -297,7 +247,7 @@ class _KatalogScreenState extends State<KatalogScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    motor['name'],
+                    motor.name,
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: darkText),
                   ),
                   const SizedBox(height: 6),
@@ -305,7 +255,7 @@ class _KatalogScreenState extends State<KatalogScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        motor['price'],
+                        motor.price,
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: darkText),
                       ),
                       const Text(
@@ -320,7 +270,7 @@ class _KatalogScreenState extends State<KatalogScreen> {
                       const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        motor['rating'],
+                        motor.rating,
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
                       ),
                     ],
@@ -334,8 +284,8 @@ class _KatalogScreenState extends State<KatalogScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Icon(
-                  motor['isFavorite'] ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                  color: motor['isFavorite'] ? primaryPurple : Colors.grey.shade400,
+                  motor.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: motor.isFavorite ? primaryPurple : Colors.grey.shade400,
                   size: 22,
                 ),
                 const SizedBox(height: 30),

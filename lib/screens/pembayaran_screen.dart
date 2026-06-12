@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../models/motor_model.dart';
 import 'qris_screen.dart'; // Buka komentar ini nanti jika qris_screen sudah ada
 
 class PembayaranScreen extends StatefulWidget {
-  // Ubah tipe data menjadi dynamic agar selaras dengan halaman sebelumnya
-  final Map<String, dynamic> motor;
+  final Motor motor;
 
   const PembayaranScreen({super.key, required this.motor});
 
@@ -17,7 +17,7 @@ class _PembayaranScreenState extends State<PembayaranScreen> {
 
   // Fungsi untuk mengambil angka harga dari string
   int _getHargaMotor() {
-    String priceStr = widget.motor['price'] ?? '0';
+    String priceStr = widget.motor.price;
     String numericOnly = priceStr.replaceAll(RegExp(r'[^0-9]'), '');
     return int.tryParse(numericOnly) ?? 0;
   }
@@ -88,7 +88,7 @@ class _PembayaranScreenState extends State<PembayaranScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Harga/hari', style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500)),
-                        Text(widget.motor['price']!.split(' ')[0],
+                        Text(widget.motor.price.split(' ')[0],
                             style: TextStyle(color: darkText, fontSize: 13, fontWeight: FontWeight.w600)),
                       ],
                     ),

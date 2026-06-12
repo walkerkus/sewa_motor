@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../models/booking_model.dart';
+
 class TiketScreen extends StatelessWidget {
-  final String namaMotor;
-  final String tanggal;
-  final String imageUrl;
+  final Booking booking;
 
   const TiketScreen({
     super.key,
-    required this.namaMotor,
-    required this.tanggal,
-    required this.imageUrl,
+    required this.booking,
   });
 
   @override
@@ -74,7 +72,7 @@ class TiketScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'TRX-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}', // Generate ID otomatis
+                              'TRX-${booking.id.toUpperCase()}', // Menggunakan ID booking
                               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: darkText),
                             ),
                           ],
@@ -82,12 +80,12 @@ class TiketScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
-                            color: primaryPurple,
+                            color: booking.status == 'Aktif' ? primaryPurple : Colors.grey,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Text(
-                            'AKTIF',
-                            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                          child: Text(
+                            booking.status.toUpperCase(),
+                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                           ),
                         ),
                       ],
@@ -108,7 +106,7 @@ class TiketScreen extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.all(8),
                           child: Image.network(
-                            imageUrl,
+                            booking.motor.image,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) =>
                                 const Icon(Icons.motorcycle_rounded, color: Colors.grey),
@@ -120,7 +118,7 @@ class TiketScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                namaMotor,
+                                booking.motor.name,
                                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: darkText),
                               ),
                               const SizedBox(height: 8),
@@ -190,7 +188,7 @@ class TiketScreen extends StatelessWidget {
                       children: [
                         _buildDetailRow('Nama Penyewa', 'Akbar', darkText),
                         _buildDetailRow('Nomor Telepon', '081253636885', darkText),
-                        _buildDetailRow('Tanggal Sewa', tanggal, darkText),
+                        _buildDetailRow('Tanggal Sewa', '${booking.startDate} - ${booking.endDate}', darkText),
                         _buildDetailRow('Lokasi Ambil', 'Cabang Surakarta', darkText),
                       ],
                     ),

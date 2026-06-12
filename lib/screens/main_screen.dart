@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../data/dummy_data.dart';
+import '../models/motor_model.dart';
 import 'detail_screen.dart'; 
 import 'riwayat_screen.dart'; 
 import 'profil_screen.dart'; 
@@ -18,23 +20,7 @@ class _MainScreenState extends State<MainScreen> {
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
 
-  // Data Dummy Rekomendasi
-  final List<Map<String, dynamic>> rekomendasiMotor = [
-    {
-      'name': 'Honda Vario 125',
-      'price': 'Rp 85.000',
-      'rating': '4.8',
-      'image': 'https://images.unsplash.com/photo-1625234199148-356b7c53d5fa?q=80&w=400',
-      'isFavorite': false,
-    },
-    {
-      'name': 'Yamaha NMAX 155',
-      'price': 'Rp 110.000',
-      'rating': '4.9',
-      'image': 'https://images.unsplash.com/photo-1625234199148-356b7c53d5fa?q=80&w=400',
-      'isFavorite': true,
-    },
-  ];
+  // Data dummy sekarang diambil dari DummyData
 
   @override
   void dispose() {
@@ -382,9 +368,9 @@ class _MainScreenState extends State<MainScreen> {
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     physics: const BouncingScrollPhysics(),
-                    itemCount: rekomendasiMotor.length,
+                    itemCount: DummyData.motors.take(3).length, // Ambil 3 pertama sebagai rekomendasi
                     itemBuilder: (context, index) {
-                      final motor = rekomendasiMotor[index];
+                      final Motor motor = DummyData.motors[index];
                       
                       return GestureDetector(
                         onTap: () {
@@ -417,17 +403,17 @@ class _MainScreenState extends State<MainScreen> {
                               Align(
                                 alignment: Alignment.topRight,
                                 child: Icon(
-                                  motor['isFavorite'] ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-                                  color: motor['isFavorite'] ? const Color(0xFF7A58E6) : Colors.grey.shade400,
+                                  motor.isFavorite ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+                                  color: motor.isFavorite ? const Color(0xFF7A58E6) : Colors.grey.shade400,
                                   size: 22,
                                 ),
                               ),
                               Expanded(
                                 child: Center(
                                   child: Hero(
-                                    tag: motor['name'], 
+                                    tag: motor.name, 
                                     child: Image.network(
-                                      motor['image'],
+                                      motor.image,
                                       fit: BoxFit.contain,
                                       errorBuilder: (context, error, stackTrace) => const Icon(Icons.motorcycle, size: 50, color: Colors.grey),
                                     ),
@@ -436,12 +422,12 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                motor['name'],
+                                motor.name,
                                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF2D3142)),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${motor['price']} / hari',
+                                '${motor.price} / hari',
                                 style: const TextStyle(color: Colors.grey, fontSize: 12),
                               ),
                               const SizedBox(height: 8),
@@ -450,7 +436,7 @@ class _MainScreenState extends State<MainScreen> {
                                   const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
                                   const SizedBox(width: 4),
                                   Text(
-                                    motor['rating'],
+                                    motor.rating,
                                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
                                   ),
                                 ],

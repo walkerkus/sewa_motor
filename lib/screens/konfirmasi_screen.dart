@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../models/motor_model.dart';
 import 'main_screen.dart'; 
 import 'riwayat_screen.dart'; // Buka komentar ini jika file riwayat_screen.dart sudah siap
 
 class KonfirmasiScreen extends StatelessWidget {
-  // Tipe data diubah ke dynamic agar selaras dengan halaman sebelumnya
-  final Map<String, dynamic> motor;
+  final Motor motor;
 
   const KonfirmasiScreen({super.key, required this.motor});
 
   // Fungsi untuk mengambil angka harga
   int _getHargaMotor() {
-    String priceStr = motor['price'] ?? '0';
+    String priceStr = motor.price;
     String numericOnly = priceStr.replaceAll(RegExp(r'[^0-9]'), '');
     return int.tryParse(numericOnly) ?? 0;
   }
@@ -146,7 +146,7 @@ class KonfirmasiScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Image.network(
-                          motor['image']!,
+                          motor.image,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) => 
                               const Icon(Icons.motorcycle_rounded, size: 30, color: Colors.grey),
@@ -158,12 +158,12 @@ class KonfirmasiScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              motor['name']!,
+                              motor.name,
                               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: darkText),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              motor['price']!,
+                              motor.price,
                               style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                             ),
                           ],

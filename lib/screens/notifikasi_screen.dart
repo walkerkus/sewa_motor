@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../data/dummy_data.dart';
+import '../models/notification_model.dart';
 
 class NotifikasiScreen extends StatelessWidget {
   const NotifikasiScreen({super.key});
@@ -8,37 +10,24 @@ class NotifikasiScreen extends StatelessWidget {
     final Color primaryPurple = const Color(0xFF7A58E6);
     final Color darkText = const Color(0xFF2D3142);
 
-    // Data Dummy Notifikasi
-    final List<Map<String, dynamic>> notifikasiList = [
-      {
-        'title': 'Pembayaran Berhasil',
-        'body': 'Pesanan Honda Vario 125 untuk tanggal 20 Mei telah dikonfirmasi.',
-        'time': '10:45 AM',
-        'icon': Icons.check_circle_rounded,
-        'color': const Color(0xFF22C55E), // Hijau
-      },
-      {
-        'title': 'Diskon Spesial!',
-        'body': 'Dapatkan potongan 20% untuk sewa motor durasi 3 hari. Gunakan kode: HEMAT20.',
-        'time': '09:00 AM',
-        'icon': Icons.local_offer_rounded,
-        'color': const Color(0xFFF59E0B), // Oranye
-      },
-      {
-        'title': 'Reminder Pengembalian',
-        'body': 'Jangan lupa, motor Yamaha NMAX harus dikembalikan hari ini sebelum pukul 14:00.',
-        'time': 'Kemarin',
-        'icon': Icons.alarm_rounded,
-        'color': const Color(0xFFEF4444), // Merah
-      },
-      {
-        'title': 'Update Sistem',
-        'body': 'Aplikasi MotorKU telah diperbarui ke versi 2.0.1. Cek fitur terbaru kami!',
-        'time': '2 Hari lalu',
-        'icon': Icons.system_update_rounded,
-        'color': const Color(0xFF64748B), // Abu
-      },
-    ];
+    // Data Notifikasi diambil dari DummyData
+    final List<NotificationModel> notifikasiList = DummyData.notifications;
+
+    // Helper untuk Icon berdasarkan tipe
+    IconData getIcon(String type) {
+      if (type == 'Pembayaran') return Icons.check_circle_rounded;
+      if (type == 'Promo') return Icons.local_offer_rounded;
+      if (type == 'Booking') return Icons.alarm_rounded;
+      return Icons.system_update_rounded;
+    }
+
+    // Helper untuk Color berdasarkan tipe
+    Color getColor(String type) {
+      if (type == 'Pembayaran') return const Color(0xFF22C55E); // Hijau
+      if (type == 'Promo') return const Color(0xFFF59E0B); // Oranye
+      if (type == 'Booking') return const Color(0xFFEF4444); // Merah
+      return const Color(0xFF64748B); // Abu
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFBFF),
@@ -68,11 +57,11 @@ class NotifikasiScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final notif = notifikasiList[index];
           return _buildNotificationCard(
-            title: notif['title'],
-            body: notif['body'],
-            time: notif['time'],
-            icon: notif['icon'],
-            color: notif['color'],
+            title: notif.title,
+            body: notif.description,
+            time: notif.time,
+            icon: getIcon(notif.type),
+            color: getColor(notif.type),
             darkText: darkText,
           );
         },

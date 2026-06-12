@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../data/dummy_data.dart';
+import '../models/message_model.dart';
 import 'main_screen.dart';
 import 'riwayat_screen.dart';
 import 'profil_screen.dart';
@@ -16,41 +18,14 @@ class _PesanScreenState extends State<PesanScreen> {
   final int _selectedIndex = 2;
   final TextEditingController _searchController = TextEditingController();
 
-  // Data Dummy Chat
-  final List<Map<String, dynamic>> listPesan = [
-    {
-      'name': 'Admin MotorKU',
-      'lastMessage': 'Halo Mas Akbar, untuk persyaratan KTP bisa diupload via link yang kami kirimkan ya. Terima kasih! 🙏',
-      'time': '10:42',
-      'unread': 2,
-      'isOnline': true,
-      'image': 'https://ui-avatars.com/api/?name=Admin+M&background=7A58E6&color=fff&rounded=true&bold=true',
-    },
-    {
-      'name': 'Pak Budi (Pengirim Motor)',
-      'lastMessage': 'Posisi saya sudah di depan gerbang MCC ya mas, motor Vario 125 nya sudah siap.',
-      'time': '09:15',
-      'unread': 1,
-      'isOnline': true,
-      'image': 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop',
-    },
-    {
-      'name': 'CS Bantuan',
-      'lastMessage': 'Terima kasih telah menghubungi layanan pelanggan kami. Tiket laporan Anda sudah ditutup.',
-      'time': 'Kemarin',
-      'unread': 0,
-      'isOnline': false,
-      'image': 'https://ui-avatars.com/api/?name=CS&background=E5E7EB&color=2D3142&rounded=true&bold=true',
-    },
-    {
-      'name': 'Promo & Info',
-      'lastMessage': 'Diskon 20% khusus untuk perpanjangan sewa hari ini! Klaim vouchernya sekarang.',
-      'time': '10 Mei',
-      'unread': 0,
-      'isOnline': false,
-      'image': 'https://ui-avatars.com/api/?name=%25&background=F3F0FF&color=7A58E6&rounded=true&bold=true',
-    },
-  ];
+  // Data Dummy Chat diambil dari DummyData
+  late List<Message> listPesan;
+
+  @override
+  void initState() {
+    super.initState();
+    listPesan = DummyData.messages;
+  }
 
   @override
   void dispose() {
@@ -124,12 +99,12 @@ class _PesanScreenState extends State<PesanScreen> {
               itemBuilder: (context, index) {
                 final chat = listPesan[index];
                 return _buildChatItem(
-                  name: chat['name'],
-                  lastMessage: chat['lastMessage'],
-                  time: chat['time'],
-                  unreadCount: chat['unread'],
-                  imageUrl: chat['image'],
-                  isOnline: chat['isOnline'],
+                  name: chat.senderName,
+                  lastMessage: chat.text,
+                  time: chat.time,
+                  unreadCount: chat.unreadCount,
+                  imageUrl: chat.avatar,
+                  isOnline: chat.isOnline,
                   primaryPurple: primaryPurple,
                   darkText: darkText,
                 );

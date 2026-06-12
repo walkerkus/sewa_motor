@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import '../models/motor_model.dart';
 import 'form_sewa_screen.dart'; 
 
 class DetailScreen extends StatefulWidget {
-  final Map<String, dynamic> motor;
+  final Motor motor;
 
   const DetailScreen({super.key, required this.motor});
 
@@ -16,10 +17,8 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Mengambil status favorit bawaan dari data jika ada
-    if (widget.motor.containsKey('isFavorite')) {
-      isFavorite = widget.motor['isFavorite'];
-    }
+    // Mengambil status favorit bawaan dari data
+    isFavorite = widget.motor.isFavorite;
   }
 
   @override
@@ -36,9 +35,9 @@ class _DetailScreenState extends State<DetailScreen> {
             child: Padding(
               padding: const EdgeInsets.only(top: 90.0),
               child: Hero(
-                tag: widget.motor['name']!,
+                tag: widget.motor.name,
                 child: Image.network(
-                  widget.motor['image']!,
+                  widget.motor.image,
                   height: 280,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) =>
@@ -72,7 +71,7 @@ class _DetailScreenState extends State<DetailScreen> {
                     children: [
                       // Judul Motor
                       Text(
-                        widget.motor['name']!,
+                        widget.motor.name,
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -99,7 +98,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
                           const SizedBox(width: 4),
                           Text(
-                            widget.motor['rating'] ?? '4.8',
+                            widget.motor.rating,
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                           ),
                           Text(
@@ -115,7 +114,7 @@ class _DetailScreenState extends State<DetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            widget.motor['price']!,
+                            widget.motor.price,
                             style: const TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.w800,

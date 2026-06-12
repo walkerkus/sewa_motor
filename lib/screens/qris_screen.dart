@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../models/motor_model.dart';
 import 'konfirmasi_screen.dart'; // Buka komentar ini jika file sudah siap
 
 class QrisScreen extends StatelessWidget {
-  // Ubah ke dynamic agar sama dengan pengiriman dari halaman sebelumnya
-  final Map<String, dynamic> motor;
+  final Motor motor;
 
   const QrisScreen({super.key, required this.motor});
 
   // Fungsi untuk mengambil angka harga
   int _getHargaMotor() {
-    String priceStr = motor['price'] ?? '0';
+    String priceStr = motor.price;
     String numericOnly = priceStr.replaceAll(RegExp(r'[^0-9]'), '');
     return int.tryParse(numericOnly) ?? 0;
   }

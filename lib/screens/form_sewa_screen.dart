@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../models/motor_model.dart';
 import 'pembayaran_screen.dart'; // Buka komentar ini nanti jika halaman pembayaran sudah ada
 
 class FormSewaScreen extends StatefulWidget {
-  // Tipe data sudah diubah ke dynamic agar sesuai dengan pengiriman dari DetailScreen
-  final Map<String, dynamic> motor;
+  final Motor motor;
 
   const FormSewaScreen({super.key, required this.motor});
 
@@ -15,7 +15,7 @@ class FormSewaScreen extends StatefulWidget {
 class _FormSewaScreenState extends State<FormSewaScreen> {
   // Mengambil angka harga dari string "Rp 85.000"
   int _getHargaMotor() {
-    String priceStr = widget.motor['price'] ?? '0';
+    String priceStr = widget.motor.price;
     String numericOnly = priceStr.replaceAll(RegExp(r'[^0-9]'), '');
     return int.tryParse(numericOnly) ?? 0;
   }
@@ -145,9 +145,9 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
                     Row(
                       children: [
                         Hero(
-                          tag: widget.motor['name']!,
+                          tag: widget.motor.name,
                           child: Image.network(
-                            widget.motor['image']!,
+                            widget.motor.image,
                             width: 80,
                             height: 60,
                             fit: BoxFit.contain,
@@ -160,12 +160,12 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.motor['name']!,
+                                widget.motor.name,
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: darkText),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${widget.motor['price']} / hari',
+                                '${widget.motor.price} / hari',
                                 style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                               ),
                             ],
