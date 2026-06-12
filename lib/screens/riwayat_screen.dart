@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'main_screen.dart'; // Untuk navigasi kembali ke Beranda
 import 'tiket_screen.dart'; // Buka komentar ini jika tiket_screen sudah siap
+import 'profil_screen.dart'; // Buka komentar ini jika file profil_screen.dart sudah siap
+import 'pesan_screen.dart'; // Buka komentar ini jika pesan_screen.dart sudah siap
 
 class RiwayatScreen extends StatefulWidget {
   const RiwayatScreen({super.key});
@@ -298,8 +300,11 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
             (Route<dynamic> route) => false,
           );
         } else if (index == 2) {
+          // Navigasi ke PesanScreen
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const PesanScreen()));
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Buka halaman Pesan')));
         } else if (index == 3) {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilScreen()));
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Buka halaman Profil')));
         }
       },

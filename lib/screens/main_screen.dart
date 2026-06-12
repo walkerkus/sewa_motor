@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'detail_screen.dart'; // Sesuaikan dengan nama file kamu
-import 'riwayat_screen.dart'; // Buka komentar ini jika file riwayat_screen.dart sudah siap
+import 'detail_screen.dart'; 
+import 'riwayat_screen.dart'; 
+import 'profil_screen.dart'; 
+import 'pesan_screen.dart'; 
+import 'katalog_screen.dart'; // Menghubungkan ke halaman Katalog
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -51,6 +54,62 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  // Fitur Bottom Sheet untuk menu "Lainnya"
+  void _showCategoryPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Pilih Kategori Lainnya',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2D3142)),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: const Color(0xFFF3F0FF), borderRadius: BorderRadius.circular(12)),
+                  child: const Icon(Icons.electric_moped_rounded, color: Color(0xFF7A58E6)),
+                ),
+                title: const Text('Motor Listrik', style: TextStyle(fontWeight: FontWeight.w600)),
+                trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const KatalogScreen(initialCategory: 'Listrik')));
+                },
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: const Color(0xFFF3F0FF), borderRadius: BorderRadius.circular(12)),
+                  child: const Icon(Icons.motorcycle_rounded, color: Color(0xFF7A58E6)),
+                ),
+                title: const Text('Motor Trail / Offroad', style: TextStyle(fontWeight: FontWeight.w600)),
+                trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const KatalogScreen(initialCategory: 'Trail')));
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,8 +151,6 @@ class _MainScreenState extends State<MainScreen> {
                     IconButton(
                       icon: const Icon(Icons.notifications_none_rounded, size: 28, color: Color(0xFF2D3142)),
                       onPressed: () {
-                        // TODO: NAVIGASI KE HALAMAN NOTIFIKASI
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationScreen()));
                         _showDummyMessage('Buka halaman Notifikasi');
                       },
                     ),
@@ -121,6 +178,12 @@ class _MainScreenState extends State<MainScreen> {
                         child: TextField(
                           controller: _searchController,
                           focusNode: _searchFocusNode,
+                          onSubmitted: (value) {
+                            if(value.isNotEmpty) {
+                               // Bisa disambungkan ke fitur pencarian nanti
+                               _showDummyMessage('Mencari: $value');
+                            }
+                          },
                           decoration: const InputDecoration(
                             hintText: 'Cari motor atau lokasi...',
                             hintStyle: TextStyle(color: Colors.black38, fontSize: 14),
@@ -149,7 +212,6 @@ class _MainScreenState extends State<MainScreen> {
                       child: IconButton(
                         icon: const Icon(Icons.tune_rounded, color: Colors.white),
                         onPressed: () {
-                          // TODO: MUNCULKAN BOTTOM SHEET FILTER ATAU HALAMAN PENCARIAN DETAIL
                           _showDummyMessage('Buka menu Filter');
                         },
                       ),
@@ -227,8 +289,6 @@ class _MainScreenState extends State<MainScreen> {
                                 elevation: 0,
                               ),
                               onPressed: () {
-                                // TODO: NAVIGASI KE HALAMAN PROMO / KATALOG DISKON
-                                // Navigator.push(context, MaterialPageRoute(builder: (context) => const PromoScreen()));
                                 _showDummyMessage('Buka promo spesial');
                               },
                               child: const Text('Sewa Sekarang', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
@@ -270,24 +330,20 @@ class _MainScreenState extends State<MainScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildCategoryItem(Icons.grid_view_rounded, 'Semua\nMotor', true, () {
-                      // TODO: NAVIGASI KE HALAMAN SEMUA MOTOR
-                      _showDummyMessage('Kategori: Semua Motor');
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const KatalogScreen(initialCategory: 'Semua')));
                     }),
                     _buildCategoryItem(Icons.moped_rounded, 'Motor\nMatic', false, () {
-                      // TODO: FILTER LIST HANYA MOTOR MATIC
-                      _showDummyMessage('Kategori: Motor Matic');
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const KatalogScreen(initialCategory: 'Matic')));
                     }),
                     _buildCategoryItem(Icons.sports_motorsports_rounded, 'Motor\nSport', false, () {
-                      // TODO: FILTER LIST HANYA MOTOR SPORT
-                      _showDummyMessage('Kategori: Motor Sport');
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const KatalogScreen(initialCategory: 'Sport')));
                     }),
                     _buildCategoryItem(Icons.two_wheeler_rounded, 'Motor\nRetro', false, () {
-                      // TODO: FILTER LIST HANYA MOTOR RETRO
-                      _showDummyMessage('Kategori: Motor Retro');
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const KatalogScreen(initialCategory: 'Retro')));
                     }),
                     _buildCategoryItem(Icons.more_horiz_rounded, 'Lainnya', false, () {
-                      // TODO: BUKA HALAMAN KATEGORI LAINNYA
-                      _showDummyMessage('Kategori: Lainnya');
+                      // Menampilkan pilihan kategori ekstensi melalui bottom sheet
+                      _showCategoryPicker(context);
                     }),
                   ],
                 ),
@@ -303,13 +359,15 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        // TODO: NAVIGASI KE HALAMAN KATALOG FULL MOTOR REKOMENDASI
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => const AllRecommendationScreen()));
-                        _showDummyMessage('Buka semua daftar rekomendasi');
+                        // Mengarah ke katalog dengan filter Semua & diurutkan bintang terbanyak
+                        Navigator.push(
+                          context, 
+                          MaterialPageRoute(builder: (context) => const KatalogScreen(initialCategory: 'Semua', sortByRating: true))
+                        );
                       },
-                      child: Text(
+                      child: const Text(
                         'Lihat semua',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF7A58E6)),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF7A58E6)),
                       ),
                     ),
                   ],
@@ -450,7 +508,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // Widget helper untuk menu kategori (Diperbarui dengan aksi onTap)
+  // Widget helper untuk menu kategori (Aksi Diperbarui)
   Widget _buildCategoryItem(IconData icon, String label, bool isActive, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -485,26 +543,19 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // Widget helper untuk Bottom Navigation (Diperbarui dengan aksi pindah halaman)
+  // Widget helper untuk Bottom Navigation
   Widget _buildNavItem(int index, IconData icon, String label) {
     bool isSelected = _selectedIndex == index;
     return GestureDetector(
       onTap: () {
         if (index == 0) {
-          // Berada di Home, update state agar ikon menyala
           setState(() => _selectedIndex = 0);
         } else if (index == 1) {
-          // TODO: NAVIGASI KE HALAMAN BOOKING / RIWAYAT TRANSAKSI
           Navigator.push(context, MaterialPageRoute(builder: (context) => const RiwayatScreen()));
-          _showDummyMessage('Pindah ke Halaman Riwayat');
         } else if (index == 2) {
-          // TODO: NAVIGASI KE HALAMAN PESAN / INBOX KOTAK MASUK
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => const PesanScreen()));
-          _showDummyMessage('Pindah ke Halaman Pesan');
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const PesanScreen()));
         } else if (index == 3) {
-          // TODO: NAVIGASI KE HALAMAN PROFIL PENGGUNA
-          // Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilScreen()));
-          _showDummyMessage('Pindah ke Halaman Profil');
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilScreen()));
         }
       },
       child: AnimatedContainer(
