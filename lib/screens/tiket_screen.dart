@@ -14,42 +14,37 @@ class TiketScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryPurple = const Color(0xFF7A58E6);
+    final Color darkText = const Color(0xFF2D3142);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFFAFBFF), // Background terang Gen Z
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFFFAFBFF),
         centerTitle: true,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF154DB3), Color(0xFF1D63DC)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 22),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: darkText, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'E-Tiket Sewa',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+          style: TextStyle(color: darkText, fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
           children: [
             // --- KARTU TIKET ---
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withOpacity(0.04),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -61,10 +56,10 @@ class TiketScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1D63DC).withOpacity(0.05),
+                      color: primaryPurple.withOpacity(0.08), // Background ungu super halus
                       borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
+                        topLeft: Radius.circular(24),
+                        topRight: Radius.circular(24),
                       ),
                     ),
                     child: Row(
@@ -73,26 +68,26 @@ class TiketScreen extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'ID Transaksi',
-                              style: TextStyle(fontSize: 11, color: Colors.black54, fontWeight: FontWeight.w600),
+                              style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'TRX-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}', // Generate ID Dummy
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.black87),
+                              'TRX-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}', // Generate ID otomatis
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: darkText),
                             ),
                           ],
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1D63DC),
+                            color: primaryPurple,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Text(
                             'AKTIF',
-                            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800),
+                            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                           ),
                         ),
                       ],
@@ -109,9 +104,9 @@ class TiketScreen extends StatelessWidget {
                           height: 80,
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          padding: const EdgeInsets.all(5),
+                          padding: const EdgeInsets.all(8),
                           child: Image.network(
                             imageUrl,
                             fit: BoxFit.contain,
@@ -119,23 +114,23 @@ class TiketScreen extends StatelessWidget {
                                 const Icon(Icons.motorcycle_rounded, color: Colors.grey),
                           ),
                         ),
-                        const SizedBox(width: 15),
+                        const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 namaMotor,
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.black87),
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: darkText),
                               ),
-                              const SizedBox(height: 6),
-                              const Row(
+                              const SizedBox(height: 8),
+                              Row(
                                 children: [
-                                  Icon(Icons.check_circle, color: Color(0xFF4ade80), size: 14),
-                                  SizedBox(width: 6),
+                                  const Icon(Icons.check_circle, color: Color(0xFF22C55E), size: 16), // Hijau sukses
+                                  const SizedBox(width: 6),
                                   Text(
                                     'Sudah Dibayar',
-                                    style: TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.w600),
+                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
@@ -146,14 +141,14 @@ class TiketScreen extends StatelessWidget {
                     ),
                   ),
 
-                  // Garis Pemisah ala Tiket
+                  // Garis Pemisah (Dashed Line) ala Tiket
                   Row(
                     children: [
                       Container(
                         width: 15,
                         height: 30,
                         decoration: const BoxDecoration(
-                          color: Color(0xFFF8FAFC),
+                          color: Color(0xFFFAFBFF), // Warna sesuai background Scaffold
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(20),
                             bottomRight: Radius.circular(20),
@@ -167,8 +162,8 @@ class TiketScreen extends StatelessWidget {
                               direction: Axis.horizontal,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: List.generate(
-                                (constraints.constrainWidth() / 8).floor(),
-                                (index) => Container(width: 4, height: 1.5, color: Colors.grey.shade300),
+                                (constraints.constrainWidth() / 10).floor(),
+                                (index) => Container(width: 5, height: 1.5, color: Colors.grey.shade300),
                               ),
                             );
                           },
@@ -178,7 +173,7 @@ class TiketScreen extends StatelessWidget {
                         width: 15,
                         height: 30,
                         decoration: const BoxDecoration(
-                          color: Color(0xFFF8FAFC),
+                          color: Color(0xFFFAFBFF),
                           borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(20),
                             bottomLeft: Radius.circular(20),
@@ -193,10 +188,10 @@ class TiketScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        _buildDetailRow('Nama Penyewa', 'Akbar'),
-                        _buildDetailRow('Nomor Telepon', '081253636885'),
-                        _buildDetailRow('Tanggal Sewa', tanggal),
-                        _buildDetailRow('Lokasi Ambil', 'Cabang Surakarta'),
+                        _buildDetailRow('Nama Penyewa', 'Akbar', darkText),
+                        _buildDetailRow('Nomor Telepon', '081253636885', darkText),
+                        _buildDetailRow('Tanggal Sewa', tanggal, darkText),
+                        _buildDetailRow('Lokasi Ambil', 'Cabang Surakarta', darkText),
                       ],
                     ),
                   ),
@@ -208,23 +203,24 @@ class TiketScreen extends StatelessWidget {
 
                   // 4. QR Code Section
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
                     child: Column(
                       children: [
-                        const Text(
+                        Text(
                           'Tunjukkan QR ini kepada petugas',
-                          style: TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.w600),
                         ),
-                        const SizedBox(height: 15),
+                        const SizedBox(height: 16),
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.black12),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade200, width: 2),
                           ),
-                          child: const Icon(Icons.qr_code_2_rounded, size: 120, color: Colors.black87),
+                          child: Icon(Icons.qr_code_2_rounded, size: 140, color: darkText),
                         ),
+                        const SizedBox(height: 10),
                       ],
                     ),
                   ),
@@ -237,11 +233,12 @@ class TiketScreen extends StatelessWidget {
             // --- TOMBOL UNDUH TIKET ---
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 54,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1D63DC),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  backgroundColor: primaryPurple,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   elevation: 0,
                 ),
                 onPressed: () {
@@ -252,10 +249,11 @@ class TiketScreen extends StatelessWidget {
                 icon: const Icon(Icons.download_rounded, color: Colors.white, size: 20),
                 label: const Text(
                   'Unduh Tiket',
-                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
+                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -263,9 +261,9 @@ class TiketScreen extends StatelessWidget {
   }
 
   // Helper untuk baris detail
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(String label, String value, Color darkText) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -273,7 +271,7 @@ class TiketScreen extends StatelessWidget {
             flex: 2,
             child: Text(
               label,
-              style: const TextStyle(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
             ),
           ),
           Expanded(
@@ -281,7 +279,7 @@ class TiketScreen extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w700),
+              style: TextStyle(fontSize: 13, color: darkText, fontWeight: FontWeight.bold),
             ),
           ),
         ],

@@ -1,49 +1,51 @@
 import 'package:flutter/material.dart';
-import 'main_screen.dart'; // Penting untuk fungsi "Kembali Ke Home"
-import 'riwayat_screen.dart';
+import 'package:intl/intl.dart';
+import 'main_screen.dart'; 
+import 'riwayat_screen.dart'; // Buka komentar ini jika file riwayat_screen.dart sudah siap
 
 class KonfirmasiScreen extends StatelessWidget {
-  final Map<String, String> motor;
+  // Tipe data diubah ke dynamic agar selaras dengan halaman sebelumnya
+  final Map<String, dynamic> motor;
 
   const KonfirmasiScreen({super.key, required this.motor});
 
+  // Fungsi untuk mengambil angka harga
+  int _getHargaMotor() {
+    String priceStr = motor['price'] ?? '0';
+    String numericOnly = priceStr.replaceAll(RegExp(r'[^0-9]'), '');
+    return int.tryParse(numericOnly) ?? 0;
+  }
+
+  // Format currency ke Rupiah
+  String _formatCurrency(int amount) {
+    final formatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    return formatter.format(amount);
+  }
+
   @override
   Widget build(BuildContext context) {
+    int totalHarga = _getHargaMotor() * 2; // Asumsi 2 hari sewa
+    
+    final Color primaryPurple = const Color(0xFF7A58E6);
+    final Color darkText = const Color(0xFF2D3142);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFFAFBFF), // Background terang
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFFFAFBFF),
         centerTitle: true,
         automaticallyImplyLeading: false, // Menghilangkan tombol back bawaan
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF154DB3), Color(0xFF1D63DC)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 22),
-          onPressed: () {
-            // Arahkan ke Home dan hapus tumpukan layar sebelumnya
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => const MainScreen()),
-              (Route<dynamic> route) => false,
-            );
-          },
-        ),
-        title: const Text(
-          'Konfirmasi',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+        title: Text(
+          'Transaksi Berhasil',
+          style: TextStyle(color: darkText, fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
-            const SizedBox(height: 40),
+            const SizedBox(height: 30),
             
             // --- IKON SUKSES & CONFETTI ---
             SizedBox(
@@ -52,23 +54,30 @@ class KonfirmasiScreen extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Potongan Confetti (Animasi Statis)
-                  _buildConfetti(top: 10, left: 60, angle: -0.2, color: Colors.cyan.shade400),
-                  _buildConfetti(top: 30, right: 30, angle: 0.5, color: Colors.cyan.shade400),
-                  _buildConfetti(bottom: 40, left: 20, angle: 0.8, color: Colors.cyan.shade400),
-                  _buildConfetti(top: 60, left: 10, angle: -0.6, color: Colors.pinkAccent),
-                  _buildConfetti(bottom: 20, right: 50, angle: -0.3, color: Colors.pinkAccent),
+                  // Potongan Confetti disesuaikan dengan tema warna aplikasi
+                  _buildConfetti(top: 10, left: 60, angle: -0.2, color: primaryPurple.withOpacity(0.6)),
+                  _buildConfetti(top: 30, right: 30, angle: 0.5, color: Colors.blue.shade300),
+                  _buildConfetti(bottom: 40, left: 20, angle: 0.8, color: Colors.blue.shade400),
+                  _buildConfetti(top: 60, left: 10, angle: -0.6, color: primaryPurple),
+                  _buildConfetti(bottom: 20, right: 50, angle: -0.3, color: primaryPurple.withOpacity(0.8)),
                   _buildConfetti(top: 80, right: 10, angle: 0.3, color: Colors.cyan.shade400),
                   
-                  // Lingkaran Centang Hijau
+                  // Lingkaran Centang Hijau Modern
                   Container(
-                    width: 110,
-                    height: 110,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF4ade80), // Hijau terang
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF22C55E), // Hijau cerah sukses
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF22C55E).withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.check_rounded, color: Colors.white, size: 70),
+                    child: const Icon(Icons.check_rounded, color: Colors.white, size: 50),
                   ),
                 ],
               ),
@@ -77,41 +86,41 @@ class KonfirmasiScreen extends StatelessWidget {
             const SizedBox(height: 10),
 
             // --- TEKS STATUS BERHASIL ---
-            const Text(
-              'Sewa Berhasil',
+            Text(
+              'Sewa Berhasil!',
               style: TextStyle(
-                fontSize: 26,
+                fontSize: 24,
                 fontWeight: FontWeight.w900,
-                color: Colors.black87,
+                color: darkText,
               ),
             ),
-            const SizedBox(height: 10),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Text(
-                'Terima kasih, Penyewaan Motor\nberhasil dilakukan.',
+                'Terima kasih, pembayaran telah diterima.\nMotor siap diambil sesuai jadwal.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black54,
-                  height: 1.4,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade500,
+                  height: 1.5,
                 ),
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 36),
 
             // --- KARTU DETAIL PENYEWAAN ---
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withOpacity(0.03),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -120,36 +129,57 @@ class KonfirmasiScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Detail Penyewaan',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.black87),
+                  Text(
+                    'Detail Pesanan',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: darkText),
                   ),
                   const SizedBox(height: 20),
                   
                   // Info Motor
                   Row(
                     children: [
-                      Image.network(
-                        motor['image']!, // DIUBAH: Dihilangkan kata 'widget.'
-                        width: 90,
-                        height: 90,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) => 
-                            const Icon(Icons.motorcycle_rounded, size: 60, color: Colors.grey),
+                      Container(
+                        width: 70,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F0FF),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Image.network(
+                          motor['image']!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => 
+                              const Icon(Icons.motorcycle_rounded, size: 30, color: Colors.grey),
+                        ),
                       ),
-                      const SizedBox(width: 15),
-                      Text(
-                        motor['name']!, // DIUBAH: Dihilangkan kata 'widget.'
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black87),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              motor['name']!,
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: darkText),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              motor['price']!,
+                              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
+                  const Divider(color: Colors.black12, height: 1, thickness: 1),
+                  const SizedBox(height: 10),
                   
                   // Baris Detail Data
-                  _buildDetailRow('Nama Penyewa', 'Budi Lestari'),
-                  _buildDetailRow('Tanggal Sewa', '6 Mei 2026'),
-                  _buildDetailRow('Lama Sewa', '2 hari'),
+                  _buildDetailRow('Nama Penyewa', 'Akbar', darkText),
+                  _buildDetailRow('Tanggal Sewa', '20 - 22 Mei 2024', darkText),
+                  _buildDetailRow('Lama Sewa', '2 Hari', darkText),
+                  _buildDetailRow('Metode Bayar', 'QRIS', darkText),
                   
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 10),
@@ -160,10 +190,10 @@ class KonfirmasiScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Total Pembayaran', style: TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.w700)),
+                      Text('Total Pembayaran', style: TextStyle(color: darkText, fontSize: 14, fontWeight: FontWeight.bold)),
                       Text(
-                        'Rp 140.000', 
-                        style: TextStyle(color: const Color(0xFF1D63DC), fontSize: 18, fontWeight: FontWeight.w900),
+                        _formatCurrency(totalHarga), 
+                        style: TextStyle(color: primaryPurple, fontSize: 18, fontWeight: FontWeight.w900),
                       ),
                     ],
                   ),
@@ -178,19 +208,20 @@ class KonfirmasiScreen extends StatelessWidget {
       
       // --- AREA TOMBOL BAWAH ---
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
-        color: const Color(0xFFF8FAFC),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        color: const Color(0xFFFAFBFF),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Tombol Kembali ke Home
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 54,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1D63DC),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  backgroundColor: primaryPurple,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   elevation: 0,
                 ),
                 onPressed: () {
@@ -201,30 +232,31 @@ class KonfirmasiScreen extends StatelessWidget {
                   );
                 },
                 child: const Text(
-                  'Kembali Ke Home',
-                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
+                  'Kembali ke Beranda',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             // Tombol Riwayat Sewa
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 54,
               child: TextButton(
                 style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  foregroundColor: primaryPurple,
                 ),
                 onPressed: () {
                   // Navigasi ke halaman Riwayat Sewa
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const RiwayatScreen()),
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const RiwayatScreen()));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Buka halaman Riwayat')),
                   );
                 },
                 child: const Text(
-                  'Lihat Riwayat Sewa',
-                  style: TextStyle(color: Color(0xFF1D63DC), fontSize: 15, fontWeight: FontWeight.w800),
+                  'Lihat Riwayat Pesanan',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -235,21 +267,16 @@ class KonfirmasiScreen extends StatelessWidget {
   }
 
   // Helper untuk membuat baris detail
-  Widget _buildDetailRow(String label, String value) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87)),
-              Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87)),
-            ],
-          ),
-        ),
-        const Divider(color: Colors.black26, height: 1, thickness: 0.5),
-      ],
+  Widget _buildDetailRow(String label, String value, Color darkText) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.grey.shade600)),
+          Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: darkText)),
+        ],
+      ),
     );
   }
 
@@ -263,11 +290,11 @@ class KonfirmasiScreen extends StatelessWidget {
       child: Transform.rotate(
         angle: angle,
         child: Container(
-          width: 12,
-          height: 18,
+          width: 10,
+          height: 16,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(4),
           ),
         ),
       ),
