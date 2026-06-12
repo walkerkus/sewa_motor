@@ -4,6 +4,7 @@ import 'riwayat_screen.dart';
 import 'profil_screen.dart'; 
 import 'pesan_screen.dart'; 
 import 'katalog_screen.dart'; // Menghubungkan ke halaman Katalog
+import 'notifikasi_screen.dart'; // Menghubungkan ke halaman Notifikasi
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -151,6 +152,7 @@ class _MainScreenState extends State<MainScreen> {
                     IconButton(
                       icon: const Icon(Icons.notifications_none_rounded, size: 28, color: Color(0xFF2D3142)),
                       onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const NotifikasiScreen()));
                         _showDummyMessage('Buka halaman Notifikasi');
                       },
                     ),

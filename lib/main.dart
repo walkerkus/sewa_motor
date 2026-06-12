@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// Import halaman utama yang sudah dipisah filenya
-import 'screens/main_screen.dart'; 
+// Import halaman-halaman yang dibutuhkan
+import 'login_screen.dart'; // Import halaman Login
 
 void main() {
   runApp(const SewaMotorAppPremium());
@@ -13,18 +13,23 @@ class SewaMotorAppPremium extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Pengaturan status bar agar terlihat clean
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.dark, // Ubah ke dark jika background Login terang
     ));
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'Sewa Motor Premium',
       theme: ThemeData(
         fontFamily: 'Inter',
-        primaryColor: const Color(0xFF1D63DC),
+        // Mengatur warna utama ungu Gen Z yang kita gunakan di seluruh aplikasi
+        primaryColor: const Color(0xFF7A58E6), 
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF7A58E6)),
       ),
-      home: const MainScreen(), // Memanggil MainScreen dari file terpisah
+      // MENGARAHKAN KE LOGIN SCREEN SEBAGAI HALAMAN PERTAMA
+      home: const LoginScreen(), 
     );
   }
 }
