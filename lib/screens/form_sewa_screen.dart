@@ -63,7 +63,7 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
                   children: [
                     _buildStepIndicator(1, 'Pilih Motor', isActive: true, activeColor: primaryPurple),
                     _buildStepLine(),
-                    _buildStepIndicator(2, 'Detail', isActive: false, activeColor: primaryPurple),
+                    _buildStepIndicator(2, 'Detail', isActive: true, activeColor: primaryPurple),
                     _buildStepLine(),
                     _buildStepIndicator(3, 'Pembayaran', isActive: false, activeColor: primaryPurple),
                   ],

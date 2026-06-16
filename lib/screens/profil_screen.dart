@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'main_screen.dart';
 import 'riwayat_screen.dart';
 import 'pesan_screen.dart'; // Buka komentar ini jika pesan_screen.dart sudah siap
+import 'data_diri_screen.dart'; // Buka komentar ini jika data_diri_screen.dart sudah siap
+import 'poin_voucher_screen.dart'; // Buka komentar ini jika poin_voucher_screen.dart sudah siap
+import 'bantuan_screen.dart'; // Buka komentar ini jika bantuan_screen.dart sudah siap
+import 'tentang_aplikasi_screen.dart'; // Buka komentar ini jika tentang_aplikasi_screen.dart sudah siap
+import 'pengaturan_screen.dart'; // Buka komentar ini jika pengaturan_screen.dart sudah siap
 
 class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
@@ -50,8 +55,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
                       IconButton(
                         icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 28),
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Buka Pengaturan')),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const PengaturanScreen()),
                           );
                         },
                       ),
@@ -163,12 +169,30 @@ class _ProfilScreenState extends State<ProfilScreen> {
                             physics: const BouncingScrollPhysics(),
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                             children: [
-                              _buildMenuItem(Icons.person_outline_rounded, 'Data Diri', darkText, onTap: () {}),
-                              _buildMenuItem(Icons.account_balance_wallet_outlined, 'Metode Pembayaran', darkText, onTap: () {}),
-                              _buildMenuItem(Icons.location_on_outlined, 'Alamat Tersimpan', darkText, onTap: () {}),
-                              _buildMenuItem(Icons.card_giftcard_rounded, 'Poin & Voucher', darkText, onTap: () {}),
-                              _buildMenuItem(Icons.help_outline_rounded, 'Bantuan', darkText, onTap: () {}),
-                              _buildMenuItem(Icons.info_outline_rounded, 'Tentang Aplikasi', darkText, onTap: () {}),
+                              _buildMenuItem(Icons.person_outline_rounded, 'Data Diri', darkText, onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const DataDiriScreen()),
+                                );
+                              }),
+                              _buildMenuItem(Icons.card_giftcard_rounded, 'Poin & Voucher', darkText, onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const PoinVoucherScreen()),
+                                  );
+                                }),
+                              _buildMenuItem(Icons.help_outline_rounded, 'Bantuan', darkText, onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const BantuanScreen()),
+                                  );
+                                }),
+                              _buildMenuItem(Icons.info_outline_rounded, 'Tentang Aplikasi', darkText, onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const TentangAplikasiScreen()),
+                                  );
+                                }),
                               _buildMenuItem(Icons.power_settings_new_rounded, 'Keluar', Colors.red, isDestructive: true, onTap: () {
                                 // Contoh aksi logout
                                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Berhasil Keluar')));
