@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../data/dummy_data.dart';
+import '../models/user_model.dart';
 import 'edit_data_diri_screen.dart'; // <-- Pastikan ini sesuai dengan nama file class EditDataDiriScreen kamu
 
 class DataDiriScreen extends StatefulWidget {
@@ -10,16 +12,7 @@ class DataDiriScreen extends StatefulWidget {
 
 class _DataDiriScreenState extends State<DataDiriScreen> {
   // --- DATA DUMMY (STRUKTUR JSON) ---
-  final Map<String, dynamic> dummyDataDiri = {
-    "foto": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200",
-    "nama_lengkap": "Reza Maulana",
-    "email": "reza.maulana@gmail.com",
-    "no_telepon": "+62 812 3456 7890",
-    "tanggal_lahir": "15 Agustus 1998",
-    "jenis_kelamin": "Laki-laki",
-    "pekerjaan": "Software Engineer",
-    "alamat": "Jl. Sudirman No. 123, Jakarta Selatan, DKI Jakarta",
-  };
+  final UserModel currentUser = DummyData.currentUser;
 
   final Color primaryPurple = const Color(0xFF7A58E6);
   final Color darkText = const Color(0xFF2D3142);
@@ -76,7 +69,7 @@ class _DataDiriScreenState extends State<DataDiriScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => EditDataDiriScreen(initialData: dummyDataDiri),
+                          builder: (context) => const EditDataDiriScreen(),
                         ),
                       );
                     },
@@ -115,7 +108,7 @@ class _DataDiriScreenState extends State<DataDiriScreen> {
                   Column(
                     children: [
                       Text(
-                        dummyDataDiri['nama_lengkap'],
+                        currentUser.name,
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -130,7 +123,7 @@ class _DataDiriScreenState extends State<DataDiriScreen> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          dummyDataDiri['pekerjaan'],
+                          currentUser.occupation,
                           style: TextStyle(
                             color: primaryPurple,
                             fontSize: 13,
@@ -147,9 +140,9 @@ class _DataDiriScreenState extends State<DataDiriScreen> {
                   _buildSectionTitle('Informasi Kontak'),
                   _buildDataCard(
                     children: [
-                      _buildDataRow(Icons.email_outlined, 'Email', dummyDataDiri['email']),
+                      _buildDataRow(Icons.email_outlined, 'Email', currentUser.email),
                       _buildDivider(),
-                      _buildDataRow(Icons.phone_outlined, 'No. Telepon', dummyDataDiri['no_telepon'], isLast: true),
+                      _buildDataRow(Icons.phone_outlined, 'No. Telepon', currentUser.phone, isLast: true),
                     ],
                   ),
 
@@ -159,9 +152,9 @@ class _DataDiriScreenState extends State<DataDiriScreen> {
                   _buildSectionTitle('Detail Pribadi'),
                   _buildDataCard(
                     children: [
-                      _buildDataRow(Icons.calendar_today_outlined, 'Tanggal Lahir', dummyDataDiri['tanggal_lahir']),
+                      _buildDataRow(Icons.calendar_today_outlined, 'Tanggal Lahir', currentUser.birthDate),
                       _buildDivider(),
-                      _buildDataRow(Icons.male_outlined, 'Jenis Kelamin', dummyDataDiri['jenis_kelamin'], isLast: true),
+                      _buildDataRow(Icons.male_outlined, 'Jenis Kelamin', currentUser.gender, isLast: true),
                     ],
                   ),
 
@@ -171,7 +164,7 @@ class _DataDiriScreenState extends State<DataDiriScreen> {
                   _buildSectionTitle('Lokasi'),
                   _buildDataCard(
                     children: [
-                      _buildDataRow(Icons.location_on_outlined, 'Alamat Domisili', dummyDataDiri['alamat'], isLast: true, isMultiline: true),
+                      _buildDataRow(Icons.location_on_outlined, 'Alamat Domisili', currentUser.address, isLast: true, isMultiline: true),
                     ],
                   ),
                 ],
@@ -202,7 +195,7 @@ class _DataDiriScreenState extends State<DataDiriScreen> {
                 child: CircleAvatar(
                   radius: 50,
                   backgroundColor: Colors.grey.shade300,
-                  backgroundImage: NetworkImage(dummyDataDiri['foto']),
+                  backgroundImage: NetworkImage(currentUser.avatar),
                 ),
               ),
             ),

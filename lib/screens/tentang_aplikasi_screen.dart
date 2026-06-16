@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../data/dummy_data.dart';
+import '../models/app_info_model.dart';
 
 class TentangAplikasiScreen extends StatelessWidget {
   const TentangAplikasiScreen({super.key});
@@ -339,24 +341,7 @@ class SyaratKetentuanScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color darkText = const Color(0xFF2D3142);
 
-    final List<Map<String, String>> dummySyarat = [
-      {
-        "judul": "1. Persyaratan Pengguna",
-        "isi": "Pengguna aplikasi minimal berusia 18 tahun, wajib memiliki KTP elektronik yang sah, dan Surat Izin Mengemudi (SIM C) aktif. Dokumen asli harus ditunjukkan saat serah terima kendaraan."
-      },
-      {
-        "judul": "2. Penggunaan Kendaraan",
-        "isi": "Motor hanya digunakan untuk keperluan transportasi normal di jalan raya. Dilarang keras menggunakan motor untuk balapan liar, off-road (kecuali motor khusus trail yang disewa), atau dipindahtangankan ke pihak ketiga tanpa izin tertulis dari pihak SewaMotor."
-      },
-      {
-        "judul": "3. Kerusakan & Kehilangan",
-        "isi": "Segala bentuk kerusakan (lecet, penyok, pecah) maupun kehilangan kendaraan yang terjadi selama masa sewa menjadi tanggung jawab penuh penyewa. Jika memilih paket asuransi premium, biaya pertanggungan akan disesuaikan dengan polis."
-      },
-      {
-        "judul": "4. Keterlambatan Pengembalian",
-        "isi": "Pengembalian motor yang melebihi batas waktu (toleransi 1 jam) akan dikenakan denda sebesar 15% dari tarif harian per jam keterlambatan."
-      },
-    ];
+    final List<AppInfoModel> dummySyarat = DummyData.terms;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -384,12 +369,12 @@ class SyaratKetentuanScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  dummySyarat[index]['judul']!,
+                  dummySyarat[index].title,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: darkText),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  dummySyarat[index]['isi']!,
+                  dummySyarat[index].content,
                   style: TextStyle(fontSize: 14, color: Colors.grey.shade600, height: 1.6),
                 ),
               ],
@@ -412,24 +397,7 @@ class KebijakanPrivasiScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color darkText = const Color(0xFF2D3142);
 
-    final List<Map<String, String>> dummyPrivasi = [
-      {
-        "judul": "1. Pengumpulan Data",
-        "isi": "Kami mengumpulkan informasi pribadi Anda seperti Nama Lengkap, Alamat Email, Nomor Telepon, Foto KTP, dan Swafoto (Selfie) guna keperluan verifikasi akun dan keamanan penyewaan."
-      },
-      {
-        "judul": "2. Pelacakan Lokasi (GPS)",
-        "isi": "Semua unit kendaraan kami dilengkapi dengan pelacak GPS. Kami mencatat riwayat lokasi perjalanan selama masa sewa guna mencegah pencurian kendaraan dan memastikan keamanan bersama."
-      },
-      {
-        "judul": "3. Penggunaan Informasi",
-        "isi": "Data Anda digunakan semata-mata untuk memproses transaksi, mengirimkan notifikasi pemesanan, dan memberikan layanan pelanggan. Kami tidak akan menjual data Anda ke pihak ketiga untuk keperluan marketing tanpa persetujuan Anda."
-      },
-      {
-        "judul": "4. Pengungkapan Data Hukum",
-        "isi": "Kami berhak menyerahkan data pribadi dan rekam jejak GPS Anda kepada pihak berwenang (Kepolisian) jika ditemukan adanya indikasi pelanggaran hukum, kecelakaan lalu lintas berat, atau penggelapan unit motor."
-      },
-    ];
+    final List<AppInfoModel> dummyPrivasi = DummyData.privacy;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -457,12 +425,12 @@ class KebijakanPrivasiScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  dummyPrivasi[index]['judul']!,
+                  dummyPrivasi[index].title,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: darkText),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  dummyPrivasi[index]['isi']!,
+                  dummyPrivasi[index].content,
                   style: TextStyle(fontSize: 14, color: Colors.grey.shade600, height: 1.6),
                 ),
               ],

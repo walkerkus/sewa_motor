@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'main_screen.dart';
 import 'riwayat_screen.dart';
-import 'pesan_screen.dart'; // Buka komentar ini jika pesan_screen.dart sudah siap
+import 'pesan_screen.dart';
+import '../data/dummy_data.dart';
 import 'data_diri_screen.dart'; // Buka komentar ini jika data_diri_screen.dart sudah siap
 import 'poin_voucher_screen.dart'; // Buka komentar ini jika poin_voucher_screen.dart sudah siap
 import 'bantuan_screen.dart'; // Buka komentar ini jika bantuan_screen.dart sudah siap
@@ -77,13 +78,11 @@ class _ProfilScreenState extends State<ProfilScreen> {
                           color: Colors.white,
                           shape: BoxShape.circle,
                         ),
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 40,
                           backgroundColor: Colors.grey,
                           // Gunakan gambar dummy profil atau ganti dengan aset lokal
-                          backgroundImage: NetworkImage(
-                            'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200',
-                          ),
+                          backgroundImage: NetworkImage(DummyData.currentUser.avatar),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -92,35 +91,36 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Reza Maulana',
-                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                            Text(
+                              DummyData.currentUser.name,
+                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'reza.maulana@gmail.com',
+                              DummyData.currentUser.email,
                               style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.8)),
                             ),
                             const SizedBox(height: 10),
                             // Badge Premium Member
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.blueAccent.shade400,
-                                borderRadius: BorderRadius.circular(20),
+                            if (DummyData.currentUser.isPremium)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.blueAccent.shade400,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.stars_rounded, color: Colors.white, size: 14),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Premium Member',
+                                      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.stars_rounded, color: Colors.white, size: 14),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Premium Member',
-                                    style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -149,9 +149,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              _buildStatItem('12', 'Total Booking', darkText),
-                              _buildStatItem('98%', 'Rating', darkText),
-                              _buildStatItem('2.450', 'Poin', darkText),
+                              _buildStatItem(DummyData.currentUser.totalBookings.toString(), 'Total Booking', darkText),
+                              _buildStatItem('${DummyData.currentUser.rating}', 'Rating', darkText),
+                              _buildStatItem('${DummyData.currentUser.points}', 'Poin', darkText),
                             ],
                           ),
                         ),

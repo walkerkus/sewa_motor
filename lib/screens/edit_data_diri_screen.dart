@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import '../data/dummy_data.dart';
+import '../models/user_model.dart';
 
 class EditDataDiriScreen extends StatefulWidget {
-  final Map<String, dynamic> initialData;
-
-  const EditDataDiriScreen({super.key, required this.initialData});
+  const EditDataDiriScreen({super.key});
 
   @override
   State<EditDataDiriScreen> createState() => _EditDataDiriScreenState();
@@ -28,14 +28,15 @@ class _EditDataDiriScreenState extends State<EditDataDiriScreen> {
   @override
   void initState() {
     super.initState();
-    // Mengisi form dengan data awal (Akbar)
-    _namaController = TextEditingController(text: widget.initialData['nama_lengkap']);
-    _emailController = TextEditingController(text: widget.initialData['email']);
-    _phoneController = TextEditingController(text: widget.initialData['no_telepon']);
-    _dobController = TextEditingController(text: widget.initialData['tanggal_lahir']);
-    _pekerjaanController = TextEditingController(text: widget.initialData['pekerjaan']);
-    _alamatController = TextEditingController(text: widget.initialData['alamat']);
-    _selectedGender = widget.initialData['jenis_kelamin'];
+    // Mengisi form dengan data dari currentUser
+    final currentUser = DummyData.currentUser;
+    _namaController = TextEditingController(text: currentUser.name);
+    _emailController = TextEditingController(text: currentUser.email);
+    _phoneController = TextEditingController(text: currentUser.phone);
+    _dobController = TextEditingController(text: currentUser.birthDate);
+    _pekerjaanController = TextEditingController(text: currentUser.occupation);
+    _alamatController = TextEditingController(text: currentUser.address);
+    _selectedGender = currentUser.gender.isNotEmpty ? currentUser.gender : null;
   }
 
   @override
@@ -222,7 +223,7 @@ class _EditDataDiriScreenState extends State<EditDataDiriScreen> {
                     child: CircleAvatar(
                       radius: 45,
                       backgroundColor: Colors.grey.shade300,
-                      backgroundImage: NetworkImage(widget.initialData['foto']),
+                      backgroundImage: NetworkImage(DummyData.currentUser.avatar),
                     ),
                   ),
                   // Ikon Edit/Kamera kecil di pojok kanan bawah avatar

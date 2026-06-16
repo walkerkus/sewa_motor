@@ -7,7 +7,6 @@ class NotifikasiScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryPurple = const Color(0xFF7A58E6);
     final Color darkText = const Color(0xFF2D3142);
 
     // Data Notifikasi diambil dari DummyData
@@ -43,12 +42,6 @@ class NotifikasiScreen extends StatelessWidget {
           'Notifikasi',
           style: TextStyle(color: darkText, fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {},
-            child: Text('Tandai Semua', style: TextStyle(color: primaryPurple, fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
       body: ListView.builder(
         physics: const BouncingScrollPhysics(),

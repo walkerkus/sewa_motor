@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../data/dummy_data.dart';
+import '../models/faq_model.dart';
 
 class BantuanScreen extends StatefulWidget {
   const BantuanScreen({super.key});
@@ -13,28 +15,7 @@ class _BantuanScreenState extends State<BantuanScreen> {
   final Color lightBg = const Color(0xFFF4F6F9);
 
   // --- DATA DUMMY FAQ ---
-  final List<Map<String, String>> dummyFaq = [
-    {
-      "tanya": "Bagaimana cara membatalkan pesanan?",
-      "jawab": "Anda dapat membatalkan pesanan dengan masuk ke menu 'Booking', pilih pesanan yang sedang aktif, lalu tekan tombol 'Batalkan Pesanan'. Pembatalan maksimal dilakukan 2 jam sebelum waktu pengambilan."
-    },
-    {
-      "tanya": "Apa saja syarat untuk menyewa motor?",
-      "jawab": "Anda wajib menyiapkan 2 dokumen utama: E-KTP asli dan SIM C yang masih aktif. Kedua dokumen ini akan difoto saat serah terima motor."
-    },
-    {
-      "tanya": "Bagaimana jika motor bermasalah di jalan?",
-      "jawab": "Jangan panik. Segera hubungi tim teknis kami melalui tombol WhatsApp Bantuan Darurat di aplikasi. Kami akan mengirimkan mekanik atau menukar motor Anda dengan unit baru secepatnya."
-    },
-    {
-      "tanya": "Apakah bisa menyewa mingguan atau bulanan?",
-      "jawab": "Sangat bisa! Kami menyediakan paket sewa Harian, Mingguan, dan Bulanan. Semakin lama durasi sewa Anda, akan ada potongan harga otomatis saat checkout."
-    },
-    {
-      "tanya": "Apakah bahan bakar (BBM) sudah termasuk?",
-      "jawab": "Saat serah terima, motor kami sediakan dengan tangki BBM minimal setengah penuh. Anda bebas mengembalikannya dengan posisi indikator bensin yang sama atau lebih."
-    },
-  ];
+  final List<FaqModel> dummyFaq = DummyData.faqs;
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +143,7 @@ class _BantuanScreenState extends State<BantuanScreen> {
                         const SizedBox(height: 12),
                         
                         // Men-generate List FAQ dari dummy data
-                        ...dummyFaq.map((faq) => _buildFaqItem(faq['tanya']!, faq['jawab']!)),
+                        ...dummyFaq.map((faq) => _buildFaqItem(faq.question, faq.answer)),
                       ],
                     ),
                   ),

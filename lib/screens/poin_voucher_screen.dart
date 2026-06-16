@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../data/dummy_data.dart';
+import '../models/voucher_model.dart';
+import '../models/point_history_model.dart';
 
 class PoinVoucherScreen extends StatefulWidget {
   const PoinVoucherScreen({super.key});
@@ -9,55 +12,9 @@ class PoinVoucherScreen extends StatefulWidget {
 
 class _PoinVoucherScreenState extends State<PoinVoucherScreen> {
   // --- DATA DUMMY ---
-  final int totalPoin = 2450;
-
-  final List<Map<String, dynamic>> dummyVouchers = [
-    {
-      "judul": "Diskon Sewa 20%",
-      "deskripsi": "Maksimal potongan Rp 50.000 untuk semua jenis motor.",
-      "berlaku_sampai": "30 Jun 2026",
-      "ikon": Icons.percent_rounded,
-      "tipe": "diskon",
-      "harga_poin": 500, // <--- PASTIKAN BARIS INI ADA
-    },
-    {
-      "judul": "Cashback Poin 10%",
-      "deskripsi": "Khusus sewa Motor Sport minimal penyewaan 2 hari.",
-      "berlaku_sampai": "15 Jul 2026",
-      "ikon": Icons.wallet_giftcard_rounded,
-      "tipe": "cashback",
-      "harga_poin": 800, // <--- PASTIKAN BARIS INI ADA
-    },
-    {
-      "judul": "Gratis Jas Hujan Extra",
-      "deskripsi": "Tambahan fasilitas untuk penyewaan di akhir pekan.",
-      "berlaku_sampai": "31 Agu 2026",
-      "ikon": Icons.sports_motorsports_rounded,
-      "tipe": "bonus",
-      "harga_poin": 300, // <--- PASTIKAN BARIS INI ADA
-    },
-  ];
-
-  final List<Map<String, dynamic>> dummyRiwayat = [
-    {
-      "judul": "Sewa Motor NMAX",
-      "tanggal": "10 Jun 2026",
-      "poin": "+150",
-      "isPemasukan": true,
-    },
-    {
-      "judul": "Tukar Voucher Diskon 20%",
-      "tanggal": "02 Jun 2026",
-      "poin": "-500",
-      "isPemasukan": false,
-    },
-    {
-      "judul": "Sewa Motor Vespa",
-      "tanggal": "15 Mei 2026",
-      "poin": "+200",
-      "isPemasukan": true,
-    },
-  ];
+  final int totalPoin = DummyData.currentUser.points;
+  final List<VoucherModel> dummyVouchers = DummyData.vouchers;
+  final List<PointHistoryModel> dummyRiwayat = DummyData.pointHistories;
 
   final Color primaryPurple = const Color(0xFF7A58E6);
   final Color darkText = const Color(0xFF2D3142);
@@ -272,7 +229,7 @@ class _PoinVoucherScreenState extends State<PoinVoucherScreen> {
   }
 
   // --- WIDGET HELPER: Bentuk Tiket Voucher yang Sangat Rapi ---
-  Widget _buildTicketVoucher(Map<String, dynamic> data) {
+  Widget _buildTicketVoucher(VoucherModel data) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       height: 140, // Tinggi fix tiket
@@ -304,15 +261,15 @@ class _PoinVoucherScreenState extends State<PoinVoucherScreen> {
                     ),
                   ),
                   child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: primaryPurple.withOpacity(0.15),
-                        shape: BoxShape.circle,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: primaryPurple.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.percent_rounded, color: primaryPurple, size: 30),
                       ),
-                      child: Icon(data['ikon'], color: primaryPurple, size: 30),
                     ),
-                  ),
                 ),
 
                 // Garis Putus-putus Pemisah (Dashed Line)
@@ -347,7 +304,7 @@ class _PoinVoucherScreenState extends State<PoinVoucherScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                data['judul'],
+                                data.title,
                                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: darkText, height: 1.2),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -366,7 +323,7 @@ class _PoinVoucherScreenState extends State<PoinVoucherScreen> {
                                   const Icon(Icons.stars_rounded, color: Colors.amber, size: 12),
                                   const SizedBox(width: 4),
                                   Text(
-                                    "${data['harga_poin']} Pts",
+                                    "${data.pointsCost} Pts",
                                     style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.amber),
                                   ),
                                 ],
@@ -377,7 +334,7 @@ class _PoinVoucherScreenState extends State<PoinVoucherScreen> {
                         
                         // Deskripsi
                         Text(
-                          data['deskripsi'],
+                          data.description,
                           style: TextStyle(fontSize: 11, color: Colors.grey.shade500, height: 1.3),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -392,7 +349,7 @@ class _PoinVoucherScreenState extends State<PoinVoucherScreen> {
                                 Icon(Icons.access_time_rounded, size: 14, color: Colors.red.shade400),
                                 const SizedBox(width: 4),
                                 Text(
-                                  data['berlaku_sampai'],
+                                  data.expiryDate,
                                   style: TextStyle(fontSize: 11, color: Colors.red.shade400, fontWeight: FontWeight.w600),
                                 ),
                               ],
@@ -400,7 +357,7 @@ class _PoinVoucherScreenState extends State<PoinVoucherScreen> {
                             InkWell(
                               onTap: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Menukar ${data['harga_poin']} poin untuk ${data['judul']}')),
+                                  SnackBar(content: Text('Menukar ${data.pointsCost} poin untuk ${data.title}')),
                                 );
                               },
                               child: Text(
@@ -451,8 +408,8 @@ class _PoinVoucherScreenState extends State<PoinVoucherScreen> {
   }
 
   // --- WIDGET HELPER: Item Riwayat Poin ---
-  Widget _buildRiwayatPoinItem(Map<String, dynamic> data) {
-    bool isPemasukan = data['isPemasukan'];
+  Widget _buildRiwayatPoinItem(PointHistoryModel data) {
+    bool isPemasukan = data.isEarned;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -489,19 +446,19 @@ class _PoinVoucherScreenState extends State<PoinVoucherScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  data['judul'],
+                  data.title,
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: darkText),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  data['tanggal'],
+                  data.date,
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                 ),
               ],
             ),
           ),
           Text(
-            data['poin'],
+            (isPemasukan ? '+' : '-') + data.points.toString(),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
