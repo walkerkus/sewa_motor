@@ -6,8 +6,21 @@ import 'riwayat_screen.dart'; // Buka komentar ini jika file riwayat_screen.dart
 
 class KonfirmasiScreen extends StatelessWidget {
   final Motor motor;
+  final DateTime startDate;
+  final DateTime endDate;
+  final int durationDays;
+  final int totalPrice;
+  final String paymentMethod;
 
-  const KonfirmasiScreen({super.key, required this.motor});
+  const KonfirmasiScreen({
+    super.key, 
+    required this.motor,
+    required this.startDate,
+    required this.endDate,
+    required this.durationDays,
+    required this.totalPrice,
+    required this.paymentMethod,
+  });
 
   // Fungsi untuk mengambil angka harga
   int _getHargaMotor() {
@@ -24,10 +37,11 @@ class KonfirmasiScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int totalHarga = _getHargaMotor() * 2; // Asumsi 2 hari sewa
-    
     final Color primaryPurple = const Color(0xFF7A58E6);
     final Color darkText = const Color(0xFF2D3142);
+
+    String startDateFormatted = DateFormat('dd MMM yyyy', 'id_ID').format(startDate);
+    String endDateFormatted = DateFormat('dd MMM yyyy', 'id_ID').format(endDate);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFBFF), // Background terang
@@ -176,10 +190,9 @@ class KonfirmasiScreen extends StatelessWidget {
                   const SizedBox(height: 10),
                   
                   // Baris Detail Data
-                  _buildDetailRow('Nama Penyewa', 'Akbar', darkText),
-                  _buildDetailRow('Tanggal Sewa', '20 - 22 Mei 2024', darkText),
-                  _buildDetailRow('Lama Sewa', '2 Hari', darkText),
-                  _buildDetailRow('Metode Bayar', 'QRIS', darkText),
+                  _buildDetailRow('Tanggal Sewa', '$startDateFormatted - $endDateFormatted', darkText),
+                  _buildDetailRow('Lama Sewa', '$durationDays Hari', darkText),
+                  _buildDetailRow('Metode Bayar', paymentMethod, darkText),
                   
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 10),
@@ -192,7 +205,7 @@ class KonfirmasiScreen extends StatelessWidget {
                     children: [
                       Text('Total Pembayaran', style: TextStyle(color: darkText, fontSize: 14, fontWeight: FontWeight.bold)),
                       Text(
-                        _formatCurrency(totalHarga), 
+                        _formatCurrency(totalPrice), 
                         style: TextStyle(color: primaryPurple, fontSize: 18, fontWeight: FontWeight.w900),
                       ),
                     ],

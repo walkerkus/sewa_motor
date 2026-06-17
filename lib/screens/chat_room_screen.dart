@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import '../data/dummy_data.dart';
 import '../models/message_model.dart';
+import '../services/api_service.dart';
 
 class ChatRoomScreen extends StatefulWidget {
+  final int messageId;
   final String senderName;
   final String senderImage;
   final bool isOnline;
 
   const ChatRoomScreen({
     super.key,
+    required this.messageId,
     required this.senderName,
     required this.senderImage,
     this.isOnline = false,
@@ -22,38 +24,62 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final TextEditingController _msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  // Data Obrolan
+  bool _isLoading = true;
   List<ChatDetail> _messages = [];
 
   @override
   void initState() {
     super.initState();
-    // Inisialisasi list messages dari DummyData
-    _messages = List.from(DummyData.chatDetails[widget.senderName] ?? []);
+    _loadChats();
   }
 
-  void _sendMessage() {
+  Future<void> _loadChats() async {
+    try {
+      setState(() => _isLoading = true);
+      final data = await ApiService.getChatDetails(widget.messageId);
+      setState(() {
+        _messages = data.map((e) => ChatDetail.fromJson(e as Map<String, dynamic>)).toList();
+        _isLoading = false;
+      });
+      _scrollToBottom();
+    } catch (_) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _sendMessage() async {
     if (_msgController.text.trim().isEmpty) return;
 
-    setState(() {
-      _messages.add(
-        ChatDetail(
-          id: DateTime.now().toString(),
-          text: _msgController.text.trim(),
-          isMe: true,
-          time: 'Sekarang', // Waktu statis untuk contoh
-        )
-      );
-      _msgController.clear();
-    });
+    final text = _msgController.text.trim();
+    _msgController.clear();
 
-    // Otomatis scroll ke bawah saat pesan baru dikirim
+    // Optimistic update
+    setState(() {
+      _messages.add(ChatDetail(
+        id: DateTime.now().millisecondsSinceEpoch,
+        text: text,
+        isMe: true,
+        time: 'Sekarang',
+      ));
+    });
+    _scrollToBottom();
+
+    try {
+      await ApiService.sendChat(widget.messageId, text);
+    } catch (_) {
+      // Gagal kirim - bisa tampilkan error tapi pesan tetap visible
+    }
+  }
+
+  void _scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 100), () {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
@@ -70,7 +96,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     final Color darkText = const Color(0xFF2D3142);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFBFF), // Background terang Gen Z
+      backgroundColor: const Color(0xFFFAFBFF),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(70),
         child: AppBar(
@@ -88,7 +114,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   CircleAvatar(
                     radius: 20,
                     backgroundColor: Colors.grey.shade200,
-                    backgroundImage: NetworkImage(widget.senderImage),
+                    backgroundImage: widget.senderImage.isNotEmpty ? NetworkImage(widget.senderImage) : null,
+                    child: widget.senderImage.isEmpty ? const Icon(Icons.person_rounded, color: Colors.grey) : null,
                   ),
                   if (widget.isOnline)
                     Positioned(
@@ -133,51 +160,41 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             ],
           ),
           actions: [
-            IconButton(
-              icon: Icon(Icons.call_rounded, color: primaryPurple),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: Icon(Icons.more_vert_rounded, color: darkText),
-              onPressed: () {},
-            ),
+            IconButton(icon: Icon(Icons.call_rounded, color: primaryPurple), onPressed: () {}),
+            IconButton(icon: Icon(Icons.more_vert_rounded, color: darkText), onPressed: () {}),
             const SizedBox(width: 8),
           ],
         ),
       ),
       body: Column(
         children: [
-          // Garis tipis pembatas AppBar
           Container(height: 1, color: Colors.grey.shade200),
-          
-          // --- AREA PESAN (CHAT BUBBLES) ---
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(20),
-              physics: const BouncingScrollPhysics(),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return _buildMessageBubble(
-                  text: message.text,
-                  isMe: message.isMe,
-                  time: message.time,
-                  primaryPurple: primaryPurple,
-                  darkText: darkText,
-                );
-              },
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF7A58E6)))
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(20),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _messages[index];
+                      return _buildMessageBubble(
+                        text: msg.text,
+                        isMe: msg.isMe,
+                        time: msg.time,
+                        primaryPurple: primaryPurple,
+                        darkText: darkText,
+                      );
+                    },
+                  ),
           ),
-
-          // --- AREA INPUT PESAN (BOTTOM TEXT FIELD) ---
           _buildMessageInputArea(primaryPurple),
         ],
       ),
     );
   }
 
-  // Widget Helper: Gelembung Chat (Chat Bubble)
   Widget _buildMessageBubble({
     required String text,
     required bool isMe,
@@ -189,9 +206,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75, // Maksimal lebar chat 75% layar
-        ),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         child: Column(
           crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
@@ -206,63 +221,38 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   bottomRight: isMe ? const Radius.circular(5) : const Radius.circular(20),
                 ),
                 boxShadow: isMe
-                    ? [] // Pesan kita tidak pakai shadow
-                    : [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                    ? []
+                    : [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
               ),
               child: Text(
                 text,
-                style: TextStyle(
-                  color: isMe ? Colors.white : darkText,
-                  fontSize: 14,
-                  height: 1.4,
-                ),
+                style: TextStyle(color: isMe ? Colors.white : darkText, fontSize: 14, height: 1.4),
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              time,
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w600),
-            ),
+            Text(time, style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
     );
   }
 
-  // Widget Helper: Area Input Pesan Bawah
   Widget _buildMessageInputArea(Color primaryPurple) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 15,
-            offset: const Offset(0, -5),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, -5))],
       ),
       child: SafeArea(
         child: Row(
           children: [
-            // Tombol Lampiran
-            IconButton(
-              icon: Icon(Icons.attach_file_rounded, color: Colors.grey.shade500),
-              onPressed: () {},
-            ),
-            // Kolom Input Teks
+            IconButton(icon: Icon(Icons.attach_file_rounded, color: Colors.grey.shade500), onPressed: () {}),
             Expanded(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6), // Abu-abu sangat terang
+                  color: const Color(0xFFF3F4F6),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: TextField(
@@ -280,7 +270,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            // Tombol Kirim
             GestureDetector(
               onTap: _sendMessage,
               child: Container(
@@ -289,13 +278,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 decoration: BoxDecoration(
                   color: primaryPurple,
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryPurple.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  boxShadow: [BoxShadow(color: primaryPurple.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
                 ),
                 child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
               ),

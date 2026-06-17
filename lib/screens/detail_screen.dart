@@ -98,7 +98,7 @@ class _DetailScreenState extends State<DetailScreen> {
                           const Icon(Icons.star_rounded, color: Colors.amber, size: 20),
                           const SizedBox(width: 4),
                           Text(
-                            widget.motor.rating,
+                            widget.motor.ratingStr,
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                           ),
                           Text(

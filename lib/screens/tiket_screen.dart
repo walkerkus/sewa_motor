@@ -72,7 +72,7 @@ class TiketScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'TRX-${booking.id.toUpperCase()}', // Menggunakan ID booking
+                              'TRX-${booking.id.toString().toUpperCase().padLeft(6, '0')}',
                               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: darkText),
                             ),
                           ],
@@ -186,10 +186,10 @@ class TiketScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        _buildDetailRow('Nama Penyewa', 'Akbar', darkText),
-                        _buildDetailRow('Nomor Telepon', '081253636885', darkText),
+                        _buildDetailRow('Nama Penyewa', 'Penyewa', darkText),
+                        _buildDetailRow('Metode Bayar', booking.paymentMethod.isNotEmpty ? booking.paymentMethod : '-', darkText),
                         _buildDetailRow('Tanggal Sewa', '${booking.startDate} - ${booking.endDate}', darkText),
-                        _buildDetailRow('Lokasi Ambil', 'Cabang Surakarta', darkText),
+                        _buildDetailRow('Lokasi Ambil', booking.pickupLocation.isNotEmpty ? booking.pickupLocation : 'Lokasi Terdaftar', darkText),
                       ],
                     ),
                   ),

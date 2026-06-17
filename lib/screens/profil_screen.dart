@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'main_screen.dart';
 import 'riwayat_screen.dart';
 import 'pesan_screen.dart';
-import '../data/dummy_data.dart';
-import 'data_diri_screen.dart'; // Buka komentar ini jika data_diri_screen.dart sudah siap
-import 'poin_voucher_screen.dart'; // Buka komentar ini jika poin_voucher_screen.dart sudah siap
-import 'bantuan_screen.dart'; // Buka komentar ini jika bantuan_screen.dart sudah siap
-import 'tentang_aplikasi_screen.dart'; // Buka komentar ini jika tentang_aplikasi_screen.dart sudah siap
-import 'pengaturan_screen.dart'; // Buka komentar ini jika pengaturan_screen.dart sudah siap
+import '../models/user_model.dart';
+import '../services/api_service.dart';
+import 'data_diri_screen.dart';
+import 'poin_voucher_screen.dart';
+import 'bantuan_screen.dart';
+import 'tentang_aplikasi_screen.dart';
+import 'pengaturan_screen.dart';
 
 class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
@@ -17,8 +18,29 @@ class ProfilScreen extends StatefulWidget {
 }
 
 class _ProfilScreenState extends State<ProfilScreen> {
-  // Navigasi bawah: 3 = Profil
   final int _selectedIndex = 3;
+
+  bool _isLoading = true;
+  UserModel? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    try {
+      setState(() => _isLoading = true);
+      final data = await ApiService.getUser();
+      setState(() {
+        _user = UserModel.fromJson(data);
+        _isLoading = false;
+      });
+    } catch (_) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,8 +103,8 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         child: CircleAvatar(
                           radius: 40,
                           backgroundColor: Colors.grey,
-                          // Gunakan gambar dummy profil atau ganti dengan aset lokal
-                          backgroundImage: NetworkImage(DummyData.currentUser.avatar),
+                          backgroundImage: (_user?.avatar.isNotEmpty == true) ? NetworkImage(_user!.avatar) : null,
+                          child: (_user?.avatar.isEmpty != false) ? const Icon(Icons.person_rounded, color: Colors.white, size: 40) : null,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -92,17 +114,16 @@ class _ProfilScreenState extends State<ProfilScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              DummyData.currentUser.name,
+                              _user?.name ?? 'Memuat...',
                               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              DummyData.currentUser.email,
+                              _user?.email ?? '',
                               style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.8)),
                             ),
                             const SizedBox(height: 10),
-                            // Badge Premium Member
-                            if (DummyData.currentUser.isPremium)
+                            if (_user?.isPremium == true)
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
@@ -149,9 +170,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              _buildStatItem(DummyData.currentUser.totalBookings.toString(), 'Total Booking', darkText),
-                              _buildStatItem('${DummyData.currentUser.rating}', 'Rating', darkText),
-                              _buildStatItem('${DummyData.currentUser.points}', 'Poin', darkText),
+                              _buildStatItem((_user?.totalBookings ?? 0).toString(), 'Total Booking', darkText),
+                              _buildStatItem('${_user?.rating ?? 0}', 'Rating', darkText),
+                              _buildStatItem('${_user?.points ?? 0}', 'Poin', darkText),
                             ],
                           ),
                         ),

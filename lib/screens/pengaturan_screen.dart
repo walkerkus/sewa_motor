@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../data/dummy_data.dart';
 
 // ============================================================================
 // 1. HALAMAN UTAMA PENGATURAN
@@ -480,7 +479,10 @@ class _PengaturanBahasaScreenState extends State<PengaturanBahasaScreen> {
   final Color lightBg = const Color(0xFFF4F6F9);
 
   String selectedLanguage = 'Indonesia'; 
-  final List<Map<String, String>> languages = DummyData.languages;
+  final List<Map<String, String>> languages = [
+    {'code': 'ID', 'name': 'Indonesia', 'flag': '🇮🇩'},
+    {'code': 'EN', 'name': 'English', 'flag': '🇺🇸'},
+  ];
 
   @override
   Widget build(BuildContext context) {

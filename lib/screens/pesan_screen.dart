@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../data/dummy_data.dart';
 import '../models/message_model.dart';
+import '../services/api_service.dart';
 import 'main_screen.dart';
 import 'riwayat_screen.dart';
 import 'profil_screen.dart';
@@ -18,13 +18,26 @@ class _PesanScreenState extends State<PesanScreen> {
   final int _selectedIndex = 2;
   final TextEditingController _searchController = TextEditingController();
 
-  // Data Dummy Chat diambil dari DummyData
-  late List<Message> listPesan;
+  bool _isLoading = true;
+  List<Message> listPesan = [];
 
   @override
   void initState() {
     super.initState();
-    listPesan = DummyData.messages;
+    _loadMessages();
+  }
+
+  Future<void> _loadMessages() async {
+    try {
+      setState(() => _isLoading = true);
+      final data = await ApiService.getMessages();
+      setState(() {
+        listPesan = data.map((e) => Message.fromJson(e as Map<String, dynamic>)).toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -92,24 +105,25 @@ class _PesanScreenState extends State<PesanScreen> {
 
           // --- 2. LIST CHAT ---
           Expanded(
-            child: ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              itemCount: listPesan.length,
-              itemBuilder: (context, index) {
-                final chat = listPesan[index];
-                return _buildChatItem(
-                  name: chat.senderName,
-                  lastMessage: chat.text,
-                  time: chat.time,
-                  unreadCount: chat.unreadCount,
-                  imageUrl: chat.avatar,
-                  isOnline: chat.isOnline,
-                  primaryPurple: primaryPurple,
-                  darkText: darkText,
-                );
-              },
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF7A58E6)))
+                : RefreshIndicator(
+                    color: primaryPurple,
+                    onRefresh: _loadMessages,
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                      itemCount: listPesan.length,
+                      itemBuilder: (context, index) {
+                        final chat = listPesan[index];
+                        return _buildChatItem(
+                          message: chat,
+                          primaryPurple: primaryPurple,
+                          darkText: darkText,
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -143,27 +157,22 @@ class _PesanScreenState extends State<PesanScreen> {
 
   // --- WIDGET HELPER: ITEM CHAT ---
   Widget _buildChatItem({
-    required String name,
-    required String lastMessage,
-    required String time,
-    required int unreadCount,
-    required String imageUrl,
-    required bool isOnline,
+    required Message message,
     required Color primaryPurple,
     required Color darkText,
   }) {
-    bool hasUnread = unreadCount > 0;
+    final bool hasUnread = message.unreadCount > 0;
 
     return GestureDetector(
       onTap: () {
-        // Navigasi ke halaman Ruang Chat (Chat Room Detail) dengan parameter yang sesuai
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ChatRoomScreen(
-              senderName: name, // Menggunakan properti yang diminta ChatRoomScreen
-              senderImage: imageUrl,
-              isOnline: isOnline,
+              messageId: message.id,
+              senderName: message.senderName,
+              senderImage: message.avatar,
+              isOnline: message.isOnline,
             ),
           ),
         );
@@ -192,9 +201,10 @@ class _PesanScreenState extends State<PesanScreen> {
                 CircleAvatar(
                   radius: 28,
                   backgroundColor: Colors.grey.shade200,
-                  backgroundImage: NetworkImage(imageUrl),
+                  backgroundImage: message.avatar.isNotEmpty ? NetworkImage(message.avatar) : null,
+                  child: message.avatar.isEmpty ? const Icon(Icons.person_rounded, color: Colors.grey) : null,
                 ),
-                if (isOnline)
+                if (message.isOnline)
                   Positioned(
                     bottom: 0,
                     right: 4,
@@ -222,7 +232,7 @@ class _PesanScreenState extends State<PesanScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          name,
+                          message.senderName,
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: hasUnread ? FontWeight.bold : FontWeight.w700,
@@ -233,7 +243,7 @@ class _PesanScreenState extends State<PesanScreen> {
                         ),
                       ),
                       Text(
-                        time,
+                        message.time,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: hasUnread ? FontWeight.bold : FontWeight.w500,
@@ -247,7 +257,7 @@ class _PesanScreenState extends State<PesanScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          lastMessage,
+                          message.text,
                           style: TextStyle(
                             fontSize: 13,
                             color: hasUnread ? darkText : Colors.grey.shade500,
@@ -266,7 +276,7 @@ class _PesanScreenState extends State<PesanScreen> {
                             shape: BoxShape.circle,
                           ),
                           child: Text(
-                            unreadCount.toString(),
+                            message.unreadCount.toString(),
                             style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                           ),
                         ),

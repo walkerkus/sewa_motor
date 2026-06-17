@@ -1,5 +1,5 @@
 class FaqModel {
-  final String id;
+  final int id;
   final String question;
   final String answer;
 
@@ -11,7 +11,7 @@ class FaqModel {
 
   factory FaqModel.fromJson(Map<String, dynamic> json) {
     return FaqModel(
-      id: json['id'] as String,
+      id: (json['id'] as num).toInt(),
       question: json['question'] as String,
       answer: json['answer'] as String,
     );

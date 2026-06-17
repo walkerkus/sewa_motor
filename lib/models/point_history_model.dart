@@ -1,5 +1,5 @@
 class PointHistoryModel {
-  final String id;
+  final int id;
   final String title;
   final int points;
   final String date;
@@ -15,11 +15,11 @@ class PointHistoryModel {
 
   factory PointHistoryModel.fromJson(Map<String, dynamic> json) {
     return PointHistoryModel(
-      id: json['id'] as String,
+      id: (json['id'] as num).toInt(),
       title: json['title'] as String,
-      points: json['points'] as int,
+      points: (json['points'] as num).toInt(),
       date: json['date'] as String,
-      isEarned: json['isEarned'] as bool,
+      isEarned: json['is_earned'] as bool? ?? true,
     );
   }
 
@@ -29,7 +29,7 @@ class PointHistoryModel {
       'title': title,
       'points': points,
       'date': date,
-      'isEarned': isEarned,
+      'is_earned': isEarned,
     };
   }
 }

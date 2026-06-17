@@ -1,32 +1,81 @@
+import 'package:intl/intl.dart';
+
 class Motor {
-  final String id;
+  final int id;
   final String name;
-  final String price; // Boleh String, tapi disarankan int di backend. Untuk mockup kita pertahankan formatnya.
-  final String rating;
-  final String category;
+  final String brand;
+  final int pricePerDay; // Harga dalam rupiah (integer dari API)
+  final double rating;
+  final String category; // Nama kategori
   final String image;
   final bool isFavorite;
+  // Detail lengkap dari API
+  final int year;
+  final int cc;
+  final String transmission;
+  final String fuelType;
+  final String color;
+  final int reviewCount;
+  final String plateNumber;
+  final bool isAvailable;
+  final String description;
 
   Motor({
     required this.id,
     required this.name,
-    required this.price,
+    required this.brand,
+    required this.pricePerDay,
     required this.rating,
     required this.category,
     required this.image,
-    required this.isFavorite,
+    this.isFavorite = false,
+    this.year = 0,
+    this.cc = 0,
+    this.transmission = 'Matic',
+    this.fuelType = 'Bensin',
+    this.color = '',
+    this.reviewCount = 0,
+    this.plateNumber = '',
+    this.isAvailable = true,
+    this.description = '',
   });
 
-  // Untuk keperluan konversi JSON
+  /// Format harga untuk ditampilkan: "Rp 85.000"
+  String get price {
+    final formatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+    return formatter.format(pricePerDay);
+  }
+
+  /// Rating dalam format string "4.8"
+  String get ratingStr => rating.toString();
+
   factory Motor.fromJson(Map<String, dynamic> json) {
+    final categoryName = json['category'] is Map
+        ? (json['category']['name'] as String? ?? '')
+        : (json['category'] as String? ?? '');
+
     return Motor(
-      id: json['id'] as String,
+      id: (json['id'] as num).toInt(),
       name: json['name'] as String,
-      price: json['price'] as String,
-      rating: json['rating'] as String,
-      category: json['category'] as String,
-      image: json['image'] as String,
-      isFavorite: json['isFavorite'] as bool? ?? false,
+      brand: json['brand'] as String? ?? '',
+      pricePerDay: (json['price'] as num).toInt(),
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      category: categoryName,
+      image: json['image'] as String? ?? '',
+      isFavorite: json['is_favorite'] as bool? ?? false,
+      year: (json['year'] as num?)?.toInt() ?? 0,
+      cc: (json['cc'] as num?)?.toInt() ?? 0,
+      transmission: json['transmission'] as String? ?? 'Matic',
+      fuelType: json['fuel_type'] as String? ?? 'Bensin',
+      color: json['color'] as String? ?? '',
+      reviewCount: (json['review_count'] as num?)?.toInt() ?? 0,
+      plateNumber: json['plate_number'] as String? ?? '',
+      isAvailable: json['is_available'] as bool? ?? true,
+      description: json['description'] as String? ?? '',
     );
   }
 
@@ -34,11 +83,12 @@ class Motor {
     return {
       'id': id,
       'name': name,
-      'price': price,
+      'brand': brand,
+      'price': pricePerDay,
       'rating': rating,
       'category': category,
       'image': image,
-      'isFavorite': isFavorite,
+      'is_favorite': isFavorite,
     };
   }
 }

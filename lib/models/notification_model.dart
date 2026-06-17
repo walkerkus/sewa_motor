@@ -1,9 +1,10 @@
 class NotificationModel {
-  final String id;
+  final int id;
   final String title;
   final String description;
   final String time;
-  final String type; // e.g., 'Promo', 'Booking', 'Pembayaran'
+  final String type; // 'Promo', 'Booking', 'Pembayaran', 'Sistem'
+  final bool isRead;
 
   NotificationModel({
     required this.id,
@@ -11,15 +12,17 @@ class NotificationModel {
     required this.description,
     required this.time,
     required this.type,
+    this.isRead = false,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
-      id: json['id'] as String,
+      id: (json['id'] as num).toInt(),
       title: json['title'] as String,
       description: json['description'] as String,
       time: json['time'] as String,
       type: json['type'] as String,
+      isRead: json['is_read'] as bool? ?? false,
     );
   }
 
@@ -30,6 +33,7 @@ class NotificationModel {
       'description': description,
       'time': time,
       'type': type,
+      'is_read': isRead,
     };
   }
 }

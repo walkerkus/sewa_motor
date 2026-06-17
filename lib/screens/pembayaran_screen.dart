@@ -2,12 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Untuk fitur Copy/Salin teks
 import 'package:intl/intl.dart';
 import '../models/motor_model.dart';
-import 'konfirmasi_screen.dart'; // Pastikan file ini ada untuk rute selanjutnya
+import '../services/api_service.dart';
+import 'konfirmasi_screen.dart';
 
 class PembayaranScreen extends StatefulWidget {
   final Motor motor;
+  final DateTime startDate;
+  final DateTime endDate;
+  final int durationDays;
+  final int totalPrice;
 
-  const PembayaranScreen({super.key, required this.motor});
+  const PembayaranScreen({
+    super.key, 
+    required this.motor,
+    required this.startDate,
+    required this.endDate,
+    required this.durationDays,
+    required this.totalPrice,
+  });
 
   @override
   State<PembayaranScreen> createState() => _PembayaranScreenState();
@@ -17,10 +29,13 @@ class _PembayaranScreenState extends State<PembayaranScreen> {
   String _selectedPaymentMethod = 'Scan QRIS';
   String? _selectedBank; // Menyimpan bank yang dipilih pengguna
   bool _showInstructions = false; // State untuk mengontrol tampilan instruksi
+  bool _isLoading = false; // State untuk API call
 
-  // --- FUNGSI SIMULASI PEMBAYARAN BERHASIL ---
-  void _simulatePaymentSuccess(String message) {
-    // 1. Munculkan pesan (Snackbar)
+  // --- FUNGSI PROSES PEMBAYARAN & BOOKING ---
+  Future<void> _processPayment(String message) async {
+    if (_isLoading) return;
+    
+    setState(() => _isLoading = true);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -29,15 +44,46 @@ class _PembayaranScreenState extends State<PembayaranScreen> {
       ),
     );
 
-    // 2. Beri jeda 1.5 detik seakan-akan loading, lalu pindah halaman otomatis
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    try {
+      final String startDateStr = DateFormat('yyyy-MM-dd').format(widget.startDate);
+      final String endDateStr = DateFormat('yyyy-MM-dd').format(widget.endDate);
+
+      await ApiService.createBooking(
+        motorId: widget.motor.id,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        durationDays: widget.durationDays,
+        totalPrice: widget.totalPrice,
+        paymentMethod: _selectedPaymentMethod,
+        pickupLocation: 'Mataram City Center (MCC)',
+      );
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => KonfirmasiScreen(motor: widget.motor)),
+          MaterialPageRoute(builder: (context) => KonfirmasiScreen(
+            motor: widget.motor,
+            startDate: widget.startDate,
+            endDate: widget.endDate,
+            durationDays: widget.durationDays,
+            totalPrice: widget.totalPrice,
+            paymentMethod: _selectedPaymentMethod,
+          )),
         );
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   // Fungsi untuk mengambil angka harga dari string
@@ -115,7 +161,8 @@ class _PembayaranScreenState extends State<PembayaranScreen> {
     final Color primaryPurple = const Color(0xFF7A58E6);
     final Color darkText = const Color(0xFF2D3142);
     
-    int totalHarga = _getHargaMotor() * 2; // Asumsi 2 hari
+    // Menghapus int totalHarga = _getHargaMotor() * 2; karena sudah pakai widget.totalPrice
+    int totalHarga = widget.totalPrice;
 
     return WillPopScope(
       onWillPop: () async {
@@ -237,7 +284,7 @@ class _PembayaranScreenState extends State<PembayaranScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Lama Sewa', style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500)),
-                  Text('2 Hari', style: TextStyle(color: darkText, fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text('${widget.durationDays} Hari', style: TextStyle(color: darkText, fontSize: 13, fontWeight: FontWeight.w600)),
                 ],
               ),
               const Padding(
@@ -389,7 +436,7 @@ class _PembayaranScreenState extends State<PembayaranScreen> {
           GestureDetector(
             onTap: () {
               // Simulasi jika ditekan QR-nya langsung
-              _simulatePaymentSuccess('Mendeteksi pembayaran QRIS berhasil...');
+              _processPayment('Mendeteksi pembayaran QRIS berhasil...');
             },
             child: Container(
               width: 220, height: 220, padding: const EdgeInsets.all(12),
@@ -432,7 +479,7 @@ class _PembayaranScreenState extends State<PembayaranScreen> {
                   ),
                   onPressed: () {
                     // MEMICU SIMULASI SUKSES
-                    _simulatePaymentSuccess('Mendownload QRIS... Pembayaran Berhasil!');
+                    _processPayment('Mendownload QRIS... Pembayaran Berhasil!');
                   },
                   child: const Text('Download', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                 ),
@@ -494,7 +541,7 @@ class _PembayaranScreenState extends State<PembayaranScreen> {
                 onTap: () {
                   Clipboard.setData(ClipboardData(text: vaNumber));
                   // MEMICU SIMULASI SUKSES
-                  _simulatePaymentSuccess('Nomor VA disalin! Memproses pembayaran otomatis...');
+                  _processPayment('Nomor VA disalin! Memproses pembayaran otomatis...');
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -569,7 +616,7 @@ class _PembayaranScreenState extends State<PembayaranScreen> {
             ),
             onPressed: () {
                // MEMICU SIMULASI SUKSES
-               _simulatePaymentSuccess('Membuka aplikasi E-Wallet... Pembayaran Berhasil!');
+               _processPayment('Membuka aplikasi E-Wallet... Pembayaran Berhasil!');
             },
             child: const Text('Buka Aplikasi E-Wallet', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
@@ -649,7 +696,7 @@ class _PembayaranScreenState extends State<PembayaranScreen> {
               ),
               onPressed: () {
                 // Manual Button: Simulasi sukses dan lanjut ke Konfirmasi
-                _simulatePaymentSuccess('Mengecek status pembayaran...');
+                _processPayment('Mengecek status pembayaran...');
               },
               child: const Text('Cek Pembayaran', style: TextStyle(fontWeight: FontWeight.bold)),
             ),

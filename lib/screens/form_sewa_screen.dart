@@ -13,6 +13,16 @@ class FormSewaScreen extends StatefulWidget {
 }
 
 class _FormSewaScreenState extends State<FormSewaScreen> {
+  late DateTime _startDate;
+  late DateTime _endDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _startDate = DateTime.now();
+    _endDate = DateTime.now().add(const Duration(days: 1));
+  }
+
   // Mengambil angka harga dari string "Rp 85.000"
   int _getHargaMotor() {
     String priceStr = widget.motor.price;
@@ -26,10 +36,55 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
     return formatter.format(amount);
   }
 
+  Future<void> _selectDate(BuildContext context, bool isStart) async {
+    final DateTime initialDate = isStart ? _startDate : _endDate;
+    final DateTime firstDate = isStart ? DateTime.now() : _startDate.add(const Duration(days: 1));
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF7A58E6), 
+              onPrimary: Colors.white, 
+              onSurface: Color(0xFF2D3142), 
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        if (isStart) {
+          _startDate = picked;
+          // Auto-adjust end date if start date is after or equal to end date
+          if (_startDate.isAfter(_endDate) || _startDate.isAtSameMomentAs(_endDate)) {
+            _endDate = _startDate.add(const Duration(days: 1));
+          }
+        } else {
+          _endDate = picked;
+        }
+      });
+    }
+  }
+
+  int get _durationDays {
+    final diff = _endDate.difference(_startDate).inDays;
+    return diff > 0 ? diff : 1;
+  }
+
+  int get _totalHarga {
+    return _getHargaMotor() * _durationDays;
+  }
+
   @override
   Widget build(BuildContext context) {
-    int hargaPerHari = _getHargaMotor();
-    int totalHarga = hargaPerHari * 2; // Hardcode 2 hari sesuai gambar
     final Color primaryPurple = const Color(0xFF7A58E6); // Ungu khas aplikasi kamu
     final Color darkText = const Color(0xFF2D3142);
 
@@ -81,9 +136,9 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDatePickerRow('Ambil', '20 Mei 2024', '10:00'),
+                    _buildDatePickerRow('Ambil', _startDate, '10:00', true),
                     const SizedBox(height: 20),
-                    _buildDatePickerRow('Kembali', '22 Mei 2024', '10:00'),
+                    _buildDatePickerRow('Kembali', _endDate, '10:00', false),
                   ],
                 ),
               ),
@@ -177,9 +232,9 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
                     const SizedBox(height: 20),
                     
                     // Durasi
-                    Text('2 Hari', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: darkText)),
+                    Text('$_durationDays Hari', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: darkText)),
                     const SizedBox(height: 4),
-                    Text('20 - 22 Mei 2024', style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+                    Text('${DateFormat('dd MMM yyyy', 'id_ID').format(_startDate)} - ${DateFormat('dd MMM yyyy', 'id_ID').format(_endDate)}', style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
                     
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
@@ -191,7 +246,7 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('Subtotal', style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
-                        Text(_formatCurrency(totalHarga), style: TextStyle(color: darkText, fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text(_formatCurrency(_totalHarga), style: TextStyle(color: darkText, fontSize: 14, fontWeight: FontWeight.w600)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -200,7 +255,7 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
                       children: [
                         Text('Total', style: TextStyle(color: darkText, fontSize: 16, fontWeight: FontWeight.bold)),
                         Text(
-                          _formatCurrency(totalHarga), 
+                          _formatCurrency(_totalHarga), 
                           style: TextStyle(color: darkText, fontSize: 18, fontWeight: FontWeight.w900),
                         ),
                       ],
@@ -233,7 +288,13 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => PembayaranScreen(motor: widget.motor),
+                builder: (context) => PembayaranScreen(
+                  motor: widget.motor,
+                  startDate: _startDate,
+                  endDate: _endDate,
+                  durationDays: _durationDays,
+                  totalPrice: _totalHarga,
+                ),
               ),
             );
           },
@@ -262,7 +323,9 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
     );
   }
 
-  Widget _buildDatePickerRow(String label, String dateValue, String timeValue) {
+  Widget _buildDatePickerRow(String label, DateTime date, String timeValue, bool isStart) {
+    String formattedDate = DateFormat('dd MMM yyyy', 'id_ID').format(date);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -273,13 +336,22 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
             // Date Box
             Expanded(
               flex: 3,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
+              child: GestureDetector(
+                onTap: () => _selectDate(context, isStart),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(formattedDate, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                      Icon(Icons.calendar_month_rounded, size: 16, color: Colors.grey.shade500),
+                    ],
+                  ),
                 ),
-                child: Text(dateValue, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
               ),
             ),
             const SizedBox(width: 12),
@@ -291,12 +363,13 @@ class _FormSewaScreenState extends State<FormSewaScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey.shade200),
+                  color: Colors.grey.shade50, // Waktu saat ini statis sesuai mock
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(timeValue, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                    Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade500),
+                    Text(timeValue, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.grey.shade600)),
+                    Icon(Icons.access_time_rounded, size: 16, color: Colors.grey.shade400),
                   ],
                 ),
               ),

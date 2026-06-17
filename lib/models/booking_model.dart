@@ -1,30 +1,50 @@
+import 'package:intl/intl.dart';
 import 'motor_model.dart';
 
 class Booking {
-  final String id;
+  final int id;
   final Motor motor;
   final String startDate;
   final String endDate;
-  final String price;
-  final String status; // 'Aktif', 'Selesai', 'Dibatalkan'
+  final int totalPrice; // integer dari API
+  final String status;
+  final int durationDays;
+  final String paymentMethod;
+  final String pickupLocation;
 
   Booking({
     required this.id,
     required this.motor,
     required this.startDate,
     required this.endDate,
-    required this.price,
+    required this.totalPrice,
     required this.status,
+    this.durationDays = 1,
+    this.paymentMethod = '',
+    this.pickupLocation = '',
   });
+
+  /// Format harga untuk ditampilkan
+  String get price {
+    final formatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+    return formatter.format(totalPrice);
+  }
 
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
-      id: json['id'] as String,
-      motor: Motor.fromJson(json['motor']),
-      startDate: json['startDate'] as String,
-      endDate: json['endDate'] as String,
-      price: json['price'] as String,
+      id: (json['id'] as num).toInt(),
+      motor: Motor.fromJson(json['motor'] as Map<String, dynamic>),
+      startDate: json['start_date'] as String,
+      endDate: json['end_date'] as String,
+      totalPrice: (json['total_price'] as num).toInt(),
       status: json['status'] as String,
+      durationDays: (json['duration_days'] as num?)?.toInt() ?? 1,
+      paymentMethod: json['payment_method'] as String? ?? '',
+      pickupLocation: json['pickup_location'] as String? ?? '',
     );
   }
 
@@ -32,10 +52,13 @@ class Booking {
     return {
       'id': id,
       'motor': motor.toJson(),
-      'startDate': startDate,
-      'endDate': endDate,
-      'price': price,
+      'start_date': startDate,
+      'end_date': endDate,
+      'total_price': totalPrice,
       'status': status,
+      'duration_days': durationDays,
+      'payment_method': paymentMethod,
+      'pickup_location': pickupLocation,
     };
   }
 }

@@ -1,5 +1,5 @@
 class Message {
-  final String id;
+  final int id;
   final String senderName;
   final String text;
   final String time;
@@ -14,36 +14,36 @@ class Message {
     required this.time,
     required this.unreadCount,
     this.avatar = '',
-    this.isOnline = true,
+    this.isOnline = false,
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      id: json['id'] as String,
-      senderName: json['senderName'] as String,
+      id: (json['id'] as num).toInt(),
+      senderName: json['sender_name'] as String,
       text: json['text'] as String,
       time: json['time'] as String,
-      unreadCount: json['unreadCount'] as int,
+      unreadCount: (json['unread_count'] as num?)?.toInt() ?? 0,
       avatar: json['avatar'] as String? ?? '',
-      isOnline: json['isOnline'] as bool? ?? true,
+      isOnline: json['is_online'] as bool? ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'senderName': senderName,
+      'sender_name': senderName,
       'text': text,
       'time': time,
-      'unreadCount': unreadCount,
+      'unread_count': unreadCount,
       'avatar': avatar,
-      'isOnline': isOnline,
+      'is_online': isOnline,
     };
   }
 }
 
 class ChatDetail {
-  final String id;
+  final int id;
   final String text;
   final String time;
   final bool isMe;
@@ -54,4 +54,22 @@ class ChatDetail {
     required this.time,
     required this.isMe,
   });
+
+  factory ChatDetail.fromJson(Map<String, dynamic> json) {
+    return ChatDetail(
+      id: (json['id'] as num).toInt(),
+      text: json['text'] as String,
+      time: json['time'] as String,
+      isMe: json['is_me'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'text': text,
+      'time': time,
+      'is_me': isMe,
+    };
+  }
 }

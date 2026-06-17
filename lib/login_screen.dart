@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/main_screen.dart'; // Menghubungkan ke beranda setelah login berhasil
-import 'data/dummy_data.dart';
-import 'models/user_model.dart';
+import 'screens/main_screen.dart';
+import 'services/api_service.dart';
 
 // ============================================================================
 // 1. HALAMAN LOGIN
@@ -19,8 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
-  // --- DATA DUMMY USER UNTUK SIMULASI LOGIN ---
-  final List<UserModel> _dummyUsers = DummyData.users;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -29,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _doLogin() {
+  Future<void> _doLogin() async {
     String inputEmail = _emailController.text.trim();
     String inputPassword = _passwordController.text.trim();
 
@@ -38,35 +36,26 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    bool isLoginSuccess = false;
-    String loggedInName = '';
-
-    for (var user in _dummyUsers) {
-      if (user.email == inputEmail && user.password == inputPassword) {
-        isLoginSuccess = true;
-        loggedInName = user.name;
-        DummyData.currentUser = user; // Set active user
-        break;
+    setState(() => _isLoading = true);
+    try {
+      final result = await ApiService.login(inputEmail, inputPassword);
+      if (result['user'] != null) {
+        final name = result['user']['name'] as String? ?? '';
+        _showSnackBar('Selamat datang kembali, $name!', isError: false);
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const MainScreen()),
+          );
+        }
+      } else {
+        _showSnackBar('Format respons tidak valid dari server', isError: true);
       }
-    }
-
-    if (isLoginSuccess) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator(color: Color(0xFF7A58E6))),
-      );
-
-      Future.delayed(const Duration(seconds: 1), () {
-        Navigator.pop(context); // Tutup loading dialog
-        _showSnackBar('Selamat datang kembali, $loggedInName!', isError: false);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
-      });
-    } else {
-      _showSnackBar('Email atau Password salah!', isError: true);
+    } catch (e) {
+      final errorMsg = e.toString().replaceAll('Exception: ', '');
+      _showSnackBar(errorMsg, isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

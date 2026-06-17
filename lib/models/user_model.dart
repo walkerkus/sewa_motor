@@ -1,9 +1,8 @@
 class UserModel {
-  final String id;
+  final int id;
   final String name;
   final String email;
   final String phone;
-  final String password;
   final String avatar;
   final bool isPremium;
   final int points;
@@ -18,8 +17,7 @@ class UserModel {
     required this.id,
     required this.name,
     required this.email,
-    required this.phone,
-    required this.password,
+    this.phone = '',
     this.avatar = '',
     this.isPremium = false,
     this.points = 0,
@@ -33,17 +31,16 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as String,
+      id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       email: json['email'] as String,
       phone: json['phone'] as String? ?? '',
-      password: json['password'] as String,
       avatar: json['avatar'] as String? ?? '',
-      isPremium: json['isPremium'] as bool? ?? false,
-      points: json['points'] as int? ?? 0,
+      isPremium: json['is_premium'] as bool? ?? false,
+      points: (json['points'] as num?)?.toInt() ?? 0,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      totalBookings: json['totalBookings'] as int? ?? 0,
-      birthDate: json['birthDate'] as String? ?? '',
+      totalBookings: (json['total_bookings'] as num?)?.toInt() ?? 0,
+      birthDate: json['birth_date'] as String? ?? '',
       gender: json['gender'] as String? ?? '',
       occupation: json['occupation'] as String? ?? '',
       address: json['address'] as String? ?? '',
@@ -56,13 +53,9 @@ class UserModel {
       'name': name,
       'email': email,
       'phone': phone,
-      'password': password,
       'avatar': avatar,
-      'isPremium': isPremium,
       'points': points,
-      'rating': rating,
-      'totalBookings': totalBookings,
-      'birthDate': birthDate,
+      'birth_date': birthDate,
       'gender': gender,
       'occupation': occupation,
       'address': address,

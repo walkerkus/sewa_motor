@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../data/dummy_data.dart';
 import '../models/motor_model.dart';
-import 'detail_screen.dart'; // Untuk navigasi ke detail saat motor diklik
+import '../services/api_service.dart';
+import 'detail_screen.dart';
 
 class KatalogScreen extends StatefulWidget {
   final String initialCategory;
-  final bool sortByRating; // Jika true, urutkan dari bintang tertinggi
+  final bool sortByRating;
 
   const KatalogScreen({
     super.key,
@@ -20,15 +20,18 @@ class KatalogScreen extends StatefulWidget {
 class _KatalogScreenState extends State<KatalogScreen> {
   late String _selectedCategory;
   final TextEditingController _searchController = TextEditingController();
-  
+
+  bool _isLoading = true;
+  String? _error;
+  List<Motor> _allMotors = [];
   List<Motor> _filteredList = [];
-  final List<String> _categories = ['Semua', 'Matic', 'Sport', 'Retro', 'Listrik'];
+  List<String> _categories = ['Semua'];
 
   @override
   void initState() {
     super.initState();
     _selectedCategory = widget.initialCategory;
-    _applyFilterAndSort();
+    _loadData();
   }
 
   @override
@@ -37,39 +40,54 @@ class _KatalogScreenState extends State<KatalogScreen> {
     super.dispose();
   }
 
-  // Logika Filter & Sorting
-  void _applyFilterAndSort() {
-    List<Motor> result = List.from(DummyData.motors);
+  Future<void> _loadData() async {
+    try {
+      setState(() { _isLoading = true; _error = null; });
+      final results = await Future.wait([
+        ApiService.getMotors(),
+        ApiService.getCategories(),
+      ]);
+      final motors = results[0] as List<dynamic>;
+      final cats = results[1] as List<dynamic>;
 
-    // 1. Filter Kategori
-    if (_selectedCategory != 'Semua') {
-      result = result.where((motor) => motor.category == _selectedCategory).toList();
-    }
+      final allMotors = motors.map((e) => Motor.fromJson(e as Map<String, dynamic>)).toList();
+      final categoryNames = ['Semua', ...cats.map((c) => c['name'] as String).toList()];
 
-    // 2. Filter Pencarian Teks
-    String query = _searchController.text.toLowerCase();
-    if (query.isNotEmpty) {
-      result = result.where((motor) => motor.name.toLowerCase().contains(query)).toList();
-    }
-
-    // 3. Sorting berdasarkan Bintang (Jika diminta via widget.sortByRating)
-    if (widget.sortByRating) {
-      result.sort((a, b) {
-        double ratingA = double.tryParse(a.rating) ?? 0.0;
-        double ratingB = double.tryParse(b.rating) ?? 0.0;
-        return ratingB.compareTo(ratingA); // Descending (Tertinggi di atas)
+      setState(() {
+        _allMotors = allMotors;
+        _categories = categoryNames;
+        _isLoading = false;
       });
+      _applyFilterAndSort();
+    } catch (e) {
+      setState(() { _error = e.toString(); _isLoading = false; });
+    }
+  }
+
+  void _applyFilterAndSort() {
+    List<Motor> result = List.from(_allMotors);
+
+    // Filter Kategori
+    if (_selectedCategory != 'Semua') {
+      result = result.where((m) => m.category == _selectedCategory).toList();
     }
 
-    setState(() {
-      _filteredList = result;
-    });
+    // Filter Pencarian
+    final query = _searchController.text.toLowerCase();
+    if (query.isNotEmpty) {
+      result = result.where((m) => m.name.toLowerCase().contains(query) || m.brand.toLowerCase().contains(query)).toList();
+    }
+
+    // Sorting
+    if (widget.sortByRating) {
+      result.sort((a, b) => b.rating.compareTo(a.rating));
+    }
+
+    setState(() => _filteredList = result);
   }
 
   void _onCategorySelected(String category) {
-    setState(() {
-      _selectedCategory = category;
-    });
+    setState(() => _selectedCategory = category);
     _applyFilterAndSort();
   }
 
@@ -83,7 +101,7 @@ class _KatalogScreenState extends State<KatalogScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // --- 1. APP BAR CUSTOM (Back, Search, Filter) ---
+            // --- APP BAR ---
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
               child: Row(
@@ -96,7 +114,7 @@ class _KatalogScreenState extends State<KatalogScreen> {
                     child: Container(
                       height: 46,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100, // Abu-abu terang sesuai gambar
+                        color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: TextField(
@@ -119,22 +137,18 @@ class _KatalogScreenState extends State<KatalogScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 5, offset: const Offset(0, 2)),
-                      ],
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 5, offset: const Offset(0, 2))],
                     ),
                     child: IconButton(
                       icon: Icon(Icons.tune_rounded, color: darkText, size: 20),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Menu Filter Tambahan')));
-                      },
+                      onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Menu Filter Tambahan'))),
                     ),
                   ),
                 ],
               ),
             ),
 
-            // --- 2. CATEGORY PILLS ---
+            // --- CATEGORY PILLS ---
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
@@ -152,10 +166,8 @@ class _KatalogScreenState extends State<KatalogScreen> {
                         color: isSelected ? primaryPurple : Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
-                          if (isSelected)
-                            BoxShadow(color: primaryPurple.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3)),
-                          if (!isSelected)
-                            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 5, offset: const Offset(0, 2)),
+                          if (isSelected) BoxShadow(color: primaryPurple.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3)),
+                          if (!isSelected) BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 5, offset: const Offset(0, 2)),
                         ],
                       ),
                       child: Text(
@@ -174,21 +186,42 @@ class _KatalogScreenState extends State<KatalogScreen> {
 
             const SizedBox(height: 10),
 
-            // --- 3. LIST VIEW MOTOR ---
+            // --- LIST VIEW MOTOR ---
             Expanded(
-              child: _filteredList.isEmpty
-                  ? Center(
-                      child: Text('Motor tidak ditemukan', style: TextStyle(color: Colors.grey.shade500)),
-                    )
-                  : ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      itemCount: _filteredList.length,
-                      itemBuilder: (context, index) {
-                        final motor = _filteredList[index];
-                        return _buildMotorCard(motor, primaryPurple, darkText);
-                      },
-                    ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: Color(0xFF7A58E6)))
+                  : _error != null
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.cloud_off_rounded, size: 60, color: Colors.grey),
+                              const SizedBox(height: 12),
+                              Text('Gagal memuat motor', style: TextStyle(color: Colors.grey.shade600)),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _loadData,
+                                style: ElevatedButton.styleFrom(backgroundColor: primaryPurple),
+                                child: const Text('Coba Lagi', style: TextStyle(color: Colors.white)),
+                              ),
+                            ],
+                          ),
+                        )
+                      : _filteredList.isEmpty
+                          ? Center(child: Text('Motor tidak ditemukan', style: TextStyle(color: Colors.grey.shade500)))
+                          : RefreshIndicator(
+                              color: primaryPurple,
+                              onRefresh: _loadData,
+                              child: ListView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                itemCount: _filteredList.length,
+                                itemBuilder: (context, index) {
+                                  final motor = _filteredList[index];
+                                  return _buildMotorCard(motor, primaryPurple, darkText);
+                                },
+                              ),
+                            ),
             ),
           ],
         ),
@@ -196,14 +229,10 @@ class _KatalogScreenState extends State<KatalogScreen> {
     );
   }
 
-  // Widget Helper: Kartu Motor List Vertical
   Widget _buildMotorCard(Motor motor, Color primaryPurple, Color darkText) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DetailScreen(motor: motor)),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (_) => DetailScreen(motor: motor)));
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
@@ -211,27 +240,17 @@ class _KatalogScreenState extends State<KatalogScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Row(
           children: [
-            // Gambar Motor
             Container(
               width: 90,
               height: 90,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFAFBFF),
-                borderRadius: BorderRadius.circular(16),
-              ),
+              decoration: BoxDecoration(color: const Color(0xFFFAFBFF), borderRadius: BorderRadius.circular(16)),
               padding: const EdgeInsets.all(8),
               child: Hero(
-                tag: motor.name,
+                tag: 'motor_${motor.id}',
                 child: Image.network(
                   motor.image,
                   fit: BoxFit.contain,
@@ -240,28 +259,17 @@ class _KatalogScreenState extends State<KatalogScreen> {
               ),
             ),
             const SizedBox(width: 16),
-            
-            // Detail Motor
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    motor.name,
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: darkText),
-                  ),
+                  Text(motor.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: darkText)),
                   const SizedBox(height: 6),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        motor.price,
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: darkText),
-                      ),
-                      const Text(
-                        ' / hari',
-                        style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600),
-                      ),
+                      Text(motor.price, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: darkText)),
+                      const Text(' / hari', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -269,17 +277,12 @@ class _KatalogScreenState extends State<KatalogScreen> {
                     children: [
                       const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
                       const SizedBox(width: 4),
-                      Text(
-                        motor.rating,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
-                      ),
+                      Text(motor.ratingStr, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
                     ],
                   ),
                 ],
               ),
             ),
-            
-            // Kolom Kanan (Favorite & Titik 3)
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

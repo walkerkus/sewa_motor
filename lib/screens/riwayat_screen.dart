@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../data/dummy_data.dart';
 import '../models/booking_model.dart';
-import 'main_screen.dart'; // Untuk navigasi kembali ke Beranda
-import 'tiket_screen.dart'; // Buka komentar ini jika tiket_screen sudah siap
-import 'profil_screen.dart'; // Buka komentar ini jika file profil_screen.dart sudah siap
-import 'pesan_screen.dart'; // Buka komentar ini jika pesan_screen.dart sudah siap
+import '../services/api_service.dart';
+import 'main_screen.dart';
+import 'tiket_screen.dart';
+import 'profil_screen.dart';
+import 'pesan_screen.dart';
 
 class RiwayatScreen extends StatefulWidget {
   const RiwayatScreen({super.key});
@@ -14,13 +14,31 @@ class RiwayatScreen extends StatefulWidget {
 }
 
 class _RiwayatScreenState extends State<RiwayatScreen> {
-  // Navigasi bawah: 1 = Booking (Sesuai dengan koreksi kamu)
   final int _selectedIndex = 1; 
-  
-  // Tab Kategori yang aktif
   String _selectedTab = 'Aktif'; 
-
   final List<String> _tabs = ['Semua', 'Aktif', 'Selesai', 'Dibatalkan'];
+
+  bool _isLoading = true;
+  List<Booking> _allBookings = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBookings();
+  }
+
+  Future<void> _loadBookings() async {
+    try {
+      setState(() => _isLoading = true);
+      final data = await ApiService.getBookings();
+      setState(() {
+        _allBookings = data.map((e) => Booking.fromJson(e as Map<String, dynamic>)).toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,64 +116,70 @@ class _RiwayatScreenState extends State<RiwayatScreen> {
 
           // --- LIST KONTEN BOOKING ---
           Expanded(
-            child: Builder(
-              builder: (context) {
-                List<Booking> filteredBookings = DummyData.bookings;
-                if (_selectedTab != 'Semua') {
-                  filteredBookings = filteredBookings.where((b) => b.status == _selectedTab).toList();
-                }
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF7A58E6)))
+                : RefreshIndicator(
+                    color: primaryPurple,
+                    onRefresh: _loadBookings,
+                    child: Builder(
+                      builder: (context) {
+                        List<Booking> filteredBookings = _allBookings;
+                        if (_selectedTab != 'Semua') {
+                          filteredBookings = filteredBookings.where((b) => b.status == _selectedTab).toList();
+                        }
 
-                if (filteredBookings.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 50),
-                      child: Text(
-                        'Tidak ada pesanan.',
-                        style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                  itemCount: filteredBookings.length,
-                  itemBuilder: (context, index) {
-                    final booking = filteredBookings[index];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (index == 0 || filteredBookings[index - 1].status != booking.status) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                            margin: EdgeInsets.only(bottom: 12, top: index == 0 ? 0.0 : 20.0),
-                            decoration: BoxDecoration(
-                              color: booking.status == 'Aktif' ? primaryPurple.withOpacity(0.1) : Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Text(
-                              booking.status,
-                              style: TextStyle(
-                                fontSize: 13, 
-                                fontWeight: FontWeight.bold, 
-                                color: booking.status == 'Aktif' ? primaryPurple : Colors.grey.shade700
+                        if (filteredBookings.isEmpty) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 50),
+                              child: Text(
+                                'Tidak ada pesanan.',
+                                style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w500),
                               ),
                             ),
-                          ),
-                        ],
-                        _buildBookingCard(
-                          booking: booking,
-                          primaryPurple: primaryPurple,
-                          darkText: darkText,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    );
-                  },
-                );
-              }
-            ),
+                          );
+                        }
+
+                        return ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                          itemCount: filteredBookings.length,
+                          itemBuilder: (context, index) {
+                            final booking = filteredBookings[index];
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (index == 0 || filteredBookings[index - 1].status != booking.status) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                    margin: EdgeInsets.only(bottom: 12, top: index == 0 ? 0.0 : 20.0),
+                                    decoration: BoxDecoration(
+                                      color: booking.status == 'Aktif' ? primaryPurple.withOpacity(0.1) : Colors.grey.shade200,
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: Text(
+                                      booking.status,
+                                      style: TextStyle(
+                                        fontSize: 13, 
+                                        fontWeight: FontWeight.bold, 
+                                        color: booking.status == 'Aktif' ? primaryPurple : Colors.grey.shade700
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                _buildBookingCard(
+                                  booking: booking,
+                                  primaryPurple: primaryPurple,
+                                  darkText: darkText,
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),

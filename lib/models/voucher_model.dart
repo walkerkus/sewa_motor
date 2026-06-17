@@ -1,43 +1,43 @@
 class VoucherModel {
-  final String id;
-  final String code;
+  final int id;
   final String title;
   final String description;
   final String expiryDate;
   final int discountPercentage;
   final int pointsCost;
+  final bool isActive;
 
   VoucherModel({
     required this.id,
-    required this.code,
     required this.title,
     required this.description,
     required this.expiryDate,
     required this.discountPercentage,
     required this.pointsCost,
+    this.isActive = true,
   });
 
   factory VoucherModel.fromJson(Map<String, dynamic> json) {
     return VoucherModel(
-      id: json['id'] as String,
-      code: json['code'] as String,
+      id: (json['id'] as num).toInt(),
       title: json['title'] as String,
       description: json['description'] as String,
-      expiryDate: json['expiryDate'] as String,
-      discountPercentage: json['discountPercentage'] as int,
-      pointsCost: json['pointsCost'] as int,
+      expiryDate: json['expiry_date'] as String,
+      discountPercentage: (json['discount_percent'] as num?)?.toInt() ?? 0,
+      pointsCost: (json['points_cost'] as num?)?.toInt() ?? 0,
+      isActive: json['is_active'] as bool? ?? true,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'code': code,
       'title': title,
       'description': description,
-      'expiryDate': expiryDate,
-      'discountPercentage': discountPercentage,
-      'pointsCost': pointsCost,
+      'expiry_date': expiryDate,
+      'discount_percent': discountPercentage,
+      'points_cost': pointsCost,
+      'is_active': isActive,
     };
   }
 }

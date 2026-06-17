@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../data/dummy_data.dart';
 import '../models/motor_model.dart';
+import '../services/api_service.dart';
 import 'detail_screen.dart'; 
 import 'riwayat_screen.dart'; 
 import 'profil_screen.dart'; 
 import 'pesan_screen.dart'; 
-import 'katalog_screen.dart'; // Menghubungkan ke halaman Katalog
-import 'notifikasi_screen.dart'; // Menghubungkan ke halaman Notifikasi
+import 'katalog_screen.dart';
+import 'notifikasi_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -20,7 +20,35 @@ class _MainScreenState extends State<MainScreen> {
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
 
-  // Data dummy sekarang diambil dari DummyData
+  bool _isLoadingMotors = true;
+  List<Motor> _featuredMotors = [];
+  String _userName = 'Pengguna';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHomeData();
+  }
+
+  Future<void> _loadHomeData() async {
+    try {
+      final results = await Future.wait([
+        ApiService.getMotors(),
+        ApiService.getUser(),
+      ]);
+      final motors = results[0] as List<dynamic>;
+      final user = results[1] as Map<String, dynamic>;
+      final name = user['name'] as String? ?? 'Pengguna';
+      final firstName = name.split(' ').first;
+      setState(() {
+        _featuredMotors = motors.take(3).map((e) => Motor.fromJson(e as Map<String, dynamic>)).toList();
+        _userName = firstName;
+        _isLoadingMotors = false;
+      });
+    } catch (_) {
+      setState(() => _isLoadingMotors = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -115,9 +143,9 @@ class _MainScreenState extends State<MainScreen> {
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
-                          'Hi, Reza 👋',
+                          'Hi, $_userName 👋',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -362,91 +390,91 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Horizontal List Cards (Sudah ada navigasi ke DetailScreen)
+                // Horizontal List Cards
                 SizedBox(
                   height: 240,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: DummyData.motors.take(3).length, // Ambil 3 pertama sebagai rekomendasi
-                    itemBuilder: (context, index) {
-                      final Motor motor = DummyData.motors[index];
-                      
-                      return GestureDetector(
-                        onTap: () {
-                          // Navigasi ke DetailScreen
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DetailScreen(motor: motor),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: 170,
-                          margin: const EdgeInsets.only(right: 16, bottom: 10, top: 5),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
-                                blurRadius: 15,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Align(
-                                alignment: Alignment.topRight,
-                                child: Icon(
-                                  motor.isFavorite ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-                                  color: motor.isFavorite ? const Color(0xFF7A58E6) : Colors.grey.shade400,
-                                  size: 22,
-                                ),
-                              ),
-                              Expanded(
-                                child: Center(
-                                  child: Hero(
-                                    tag: motor.name, 
-                                    child: Image.network(
-                                      motor.image,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.motorcycle, size: 50, color: Colors.grey),
+                  child: _isLoadingMotors
+                      ? const Center(child: CircularProgressIndicator(color: Color(0xFF7A58E6)))
+                      : ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: _featuredMotors.length,
+                          itemBuilder: (context, index) {
+                            final Motor motor = _featuredMotors[index];
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => DetailScreen(motor: motor),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 170,
+                                margin: const EdgeInsets.only(right: 16, bottom: 10, top: 5),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.04),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
                                     ),
-                                  ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.topRight,
+                                      child: Icon(
+                                        motor.isFavorite ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+                                        color: motor.isFavorite ? const Color(0xFF7A58E6) : Colors.grey.shade400,
+                                        size: 22,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Center(
+                                        child: Hero(
+                                          tag: 'motor_${motor.id}',
+                                          child: Image.network(
+                                            motor.image,
+                                            fit: BoxFit.contain,
+                                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.motorcycle, size: 50, color: Colors.grey),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      motor.name,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF2D3142)),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${motor.price} / hari',
+                                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          motor.ratingStr,
+                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                motor.name,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF2D3142)),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${motor.price} / hari',
-                                style: const TextStyle(color: Colors.grey, fontSize: 12),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    motor.rating,
-                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
                 const SizedBox(height: 20),
               ],

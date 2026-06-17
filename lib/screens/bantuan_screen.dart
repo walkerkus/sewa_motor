@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../data/dummy_data.dart';
 import '../models/faq_model.dart';
+import '../services/api_service.dart';
 
 class BantuanScreen extends StatefulWidget {
   const BantuanScreen({super.key});
@@ -14,8 +14,28 @@ class _BantuanScreenState extends State<BantuanScreen> {
   final Color darkText = const Color(0xFF2D3142);
   final Color lightBg = const Color(0xFFF4F6F9);
 
-  // --- DATA DUMMY FAQ ---
-  final List<FaqModel> dummyFaq = DummyData.faqs;
+  bool _isLoading = true;
+  String? _error;
+  List<FaqModel> _faqs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFaqs();
+  }
+
+  Future<void> _loadFaqs() async {
+    try {
+      setState(() { _isLoading = true; _error = null; });
+      final data = await ApiService.getFaqs();
+      setState(() {
+        _faqs = data.map((e) => FaqModel.fromJson(e as Map<String, dynamic>)).toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() { _error = e.toString(); _isLoading = false; });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +82,7 @@ class _BantuanScreenState extends State<BantuanScreen> {
                       letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(width: 48), // Spacer agar teks pas di tengah
+                  const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -83,7 +103,7 @@ class _BantuanScreenState extends State<BantuanScreen> {
               ),
               child: Column(
                 children: [
-                  // --- SEARCH BAR BANTUAN (Floating/Overlap design) ---
+                  // --- SEARCH BAR (Floating) ---
                   Transform.translate(
                     offset: const Offset(0, -25),
                     child: Padding(
@@ -120,32 +140,49 @@ class _BantuanScreenState extends State<BantuanScreen> {
                   ),
 
                   Expanded(
-                    child: ListView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.only(top: 0, bottom: 40, left: 24, right: 24),
-                      children: [
-                        // --- KELOMPOK KONTAK (Hubungi Kami) ---
-                        _buildSectionTitle('Hubungi Customer Service'),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildContactButton(Icons.chat_bubble_rounded, 'Live Chat', Colors.blue.shade400, () {}),
-                            _buildContactButton(Icons.call_rounded, 'Telepon', Colors.green.shade400, () {}),
-                            _buildContactButton(Icons.email_rounded, 'Email', Colors.orange.shade400, () {}),
-                          ],
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // --- KELOMPOK FAQ (Pertanyaan Umum) ---
-                        _buildSectionTitle('Pertanyaan Populer (FAQ)'),
-                        const SizedBox(height: 12),
-                        
-                        // Men-generate List FAQ dari dummy data
-                        ...dummyFaq.map((faq) => _buildFaqItem(faq.question, faq.answer)),
-                      ],
-                    ),
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator(color: Color(0xFF7A58E6)))
+                        : _error != null
+                            ? Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.cloud_off_rounded, size: 50, color: Colors.grey),
+                                    const SizedBox(height: 12),
+                                    Text('Gagal memuat FAQ', style: TextStyle(color: Colors.grey.shade600)),
+                                    const SizedBox(height: 16),
+                                    ElevatedButton(
+                                      onPressed: _loadFaqs,
+                                      style: ElevatedButton.styleFrom(backgroundColor: primaryPurple),
+                                      child: const Text('Coba Lagi', style: TextStyle(color: Colors.white)),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : RefreshIndicator(
+                                color: primaryPurple,
+                                onRefresh: _loadFaqs,
+                                child: ListView(
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.only(top: 0, bottom: 40, left: 24, right: 24),
+                                  children: [
+                                    _buildSectionTitle('Hubungi Customer Service'),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        _buildContactButton(Icons.chat_bubble_rounded, 'Live Chat', Colors.blue.shade400),
+                                        _buildContactButton(Icons.call_rounded, 'Telepon', Colors.green.shade400),
+                                        _buildContactButton(Icons.email_rounded, 'Email', Colors.orange.shade400),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 32),
+                                    _buildSectionTitle('Pertanyaan Populer (FAQ)'),
+                                    const SizedBox(height: 12),
+                                    ..._faqs.map((faq) => _buildFaqItem(faq.question, faq.answer)),
+                                  ],
+                                ),
+                              ),
                   ),
                 ],
               ),
@@ -156,7 +193,6 @@ class _BantuanScreenState extends State<BantuanScreen> {
     );
   }
 
-  // --- WIDGET HELPER: Judul Seksi ---
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -169,8 +205,7 @@ class _BantuanScreenState extends State<BantuanScreen> {
     );
   }
 
-  // --- WIDGET HELPER: Tombol Kontak (Chat, Call, Email) ---
-  Widget _buildContactButton(IconData icon, String label, Color color, VoidCallback onTap) {
+  Widget _buildContactButton(IconData icon, String label, Color color) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -205,7 +240,6 @@ class _BantuanScreenState extends State<BantuanScreen> {
     );
   }
 
-  // --- WIDGET HELPER: Item FAQ (Accordion / Expandable) ---
   Widget _buildFaqItem(String question, String answer) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -221,7 +255,6 @@ class _BantuanScreenState extends State<BantuanScreen> {
           )
         ],
       ),
-      // Menggunakan Theme untuk menghilangkan garis default bawaan ExpansionTile
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(

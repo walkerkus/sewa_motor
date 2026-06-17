@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../data/dummy_data.dart';
 import '../models/user_model.dart';
+import '../services/api_service.dart';
 
 class EditDataDiriScreen extends StatefulWidget {
   const EditDataDiriScreen({super.key});
@@ -25,18 +25,38 @@ class _EditDataDiriScreenState extends State<EditDataDiriScreen> {
   String? _selectedGender;
   final List<String> _genderOptions = ['Laki-laki', 'Perempuan'];
 
+  bool _isLoading = true;
+  bool _isSaving = false;
+
   @override
   void initState() {
     super.initState();
-    // Mengisi form dengan data dari currentUser
-    final currentUser = DummyData.currentUser;
-    _namaController = TextEditingController(text: currentUser.name);
-    _emailController = TextEditingController(text: currentUser.email);
-    _phoneController = TextEditingController(text: currentUser.phone);
-    _dobController = TextEditingController(text: currentUser.birthDate);
-    _pekerjaanController = TextEditingController(text: currentUser.occupation);
-    _alamatController = TextEditingController(text: currentUser.address);
-    _selectedGender = currentUser.gender.isNotEmpty ? currentUser.gender : null;
+    _namaController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+    _dobController = TextEditingController();
+    _pekerjaanController = TextEditingController();
+    _alamatController = TextEditingController();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    try {
+      final data = await ApiService.getUser();
+      final user = UserModel.fromJson(data);
+      setState(() {
+        _namaController.text = user.name;
+        _emailController.text = user.email;
+        _phoneController.text = user.phone;
+        _dobController.text = user.birthDate;
+        _pekerjaanController.text = user.occupation;
+        _alamatController.text = user.address;
+        _selectedGender = user.gender.isNotEmpty ? user.gender : null;
+        _isLoading = false;
+      });
+    } catch (_) {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -223,7 +243,7 @@ class _EditDataDiriScreenState extends State<EditDataDiriScreen> {
                     child: CircleAvatar(
                       radius: 45,
                       backgroundColor: Colors.grey.shade300,
-                      backgroundImage: NetworkImage(DummyData.currentUser.avatar),
+                      child: const Icon(Icons.person_rounded, color: Colors.white, size: 45),
                     ),
                   ),
                   // Ikon Edit/Kamera kecil di pojok kanan bawah avatar
